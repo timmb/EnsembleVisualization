@@ -1,0 +1,3 @@
+[submodule "openFrameworks"]
+	path = openFrameworks
+	url = https://github.com/timmb/openFrameworks.git
