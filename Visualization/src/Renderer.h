@@ -33,6 +33,7 @@ public:
 	std::vector<ofVec2f> points() const;
 	
 	bool debugDraw;
+	bool hermite;
 	
 private:
 	void drawQuad(ofVec2f const& pos, ofVec2f const& size);
@@ -49,6 +50,14 @@ private:
 	std::map<int,std::map<int,std::vector<ofVec2f> > > mBeziersPerInstrumentPair;
 	
 	float mx, my;
+	
+	template <typename T>
+	static T hermiteSpline(T const& point0, T const& tangent0, T const& point1, T const& tangent1, float t);
+	
+	template <typename T>
+	static T hermiteSpline(std::vector<T> const& points, float t);
+	
+	ofVec2f interpHermite(int inst0, int inst1, float t) const;
 };
 
 template<typename T, typename L>

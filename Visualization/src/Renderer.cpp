@@ -18,6 +18,7 @@ void Renderer::setState(State const& newState)
 
 Renderer::Renderer()
 : debugDraw(false)
+, hermite(true)
 {
 	ofImage blob;
 	blob.loadImage("blob.png");
@@ -150,6 +151,8 @@ void Renderer::draw(float elapsedTime, float dt)
 		t *= min(1.f, t+0.2f);
 		int p = i%NUM_INSTRUMENTS;
 		int q = (i/NUM_INSTRUMENTS)%NUM_INSTRUMENTS; // dest
+//		if (p!=2 || q!=5)
+//			continue;
 		ofVec2f const& orig = mState.instruments.at(p).pos;
 		ofVec2f const& dest = mState.instruments.at(q).pos;
 //		float deviation = ofRandom(mx-0.3, mx);
@@ -158,15 +161,23 @@ void Renderer::draw(float elapsedTime, float dt)
 //		interp.push_back(mid);
 //		interp.push_back(dest);
 //		ofVec2f point = interp.sampleAt(t);
-		ofVec2f point = interp(p, q, t);
+		ofVec2f point;
+		if (hermite)
+		{
+			point = interpHermite(p, q, t);
+		}
+		else
+		{
+			point = interp(p, q, t);
+		}
 		ofSeedRandom((NUM_INSTRUMENTS*p + q)*123232);
 		float noise = ofNoise(point.x, point.y, elapsedTime*(ofRandom(0.1,0.7))*.4);
 		float noise2 = ofNoise(point.x, point.y, elapsedTime*(ofRandom(0.1, 0.7)))*(sin(elapsedTime)+0.5f);
 		float noise3 = ofNoise(point.x, point.y, elapsedTime*0.007);
 		noise *= noise*noise;
 		ofSeedRandom(i*124212);
-		float brightness = sq(ofRandom(1)*0.5);
-		float scaleFactor = 1.+2*cos(ofRandom(-0.5, 0.5)) * 0.5;
+		float brightness = sq(ofRandom(1)*0.63);
+		float scaleFactor = 1.+2*cos(ofRandom(-0.5, 0.5)) * 0.7;
 		float size = 0.012f *scaleFactor;
 		point += ofVec2f(cos(TWO_PI*noise+noise3), sin(TWO_PI*noise+noise3)) * (0.015+(noise2*0.02-0.05) + 0.03*noise3);
 //		point += my*ofVec2f(cos(p*q+ofRandom(TWO_PI)), sin(p*q+ofRandom(TWO_PI)));
@@ -218,7 +229,7 @@ struct VecComparer
 {
 	bool operator()(ofVec2f const* a, ofVec2f const* b)
 	{
-		return mDistSq[a] < mDistSq[b];
+		return mDistSq[a] > mDistSq[b];
 	}
 	
 	static map<ofVec2f const*, float> mDistSq;
@@ -255,10 +266,14 @@ void Renderer::updateBezierPoints()
 				bezierPoints.push_back(*queue.top());
 				queue.pop();
 			}
-			bezierPoints.push_back(dest);
-			if (bezierPoints.size() < 4) // in case we have no control points
+			if (bezierPoints.size() < 2) // in case we have no control points
 			{
 				bezierPoints.push_back(orig);
+				bezierPoints.push_back(dest);
+			}
+			bezierPoints.push_back(dest);
+			if (bezierPoints.size() < 4)
+			{
 				bezierPoints.push_back(dest);
 			}
 			mBeziersPerInstrumentPair[i][j] = bezierPoints;
@@ -368,3 +383,45 @@ void Renderer::drawDebugOverlay()
 		ofEllipse(point, 0.1, 0.1);
 	}
 }
+
+template <typename T>
+T Renderer::hermiteSpline(T const& point0, T const& tangent0, T const& point1, T const& tangent1, float s)
+{
+	float h1 =  2*s*s*s - 3*s*s + 1;          // calculate basis function 1
+	float h2 = -2*s*s*s + 3*s*s;              // calculate basis function 2
+	float h3 =   s*s*s  - 2*s*s + s;         // calculate basis function 3
+	float h4 =   s*s*s  -  s*s;              // calculate basis function 4
+	T p = h1*point0 +                    // multiply and sum all funtions
+	h2*point1 +                    // together to build the interpolated
+	h3*tangent0 +                    // point along the curve.
+	h4*tangent1;
+	return p;
+}
+
+template <typename T>
+T Renderer::hermiteSpline(vector<T> const& points, float t)
+{
+	assert(points.size()>=2);
+	const int numSegments = points.size() - 1;
+	int segment = min(numSegments-1, int(t*numSegments));
+	float p = t*numSegments - segment;
+	assert(0<=p && p<=1);
+	assert(segment < points.size()-1);
+	// last segment is a special case
+	// ...
+	ofVec2f tangent0 = points[segment+1]-points[segment];
+	ofVec2f tangent1 =
+		segment+2>=points.size()? ofVec2f()
+								: points[segment+2]-points[segment];
+	return hermiteSpline(points[segment], points[segment+1]-points[segment], points[segment+1], points[segment+2]-points[segment], p);
+	
+}
+
+ofVec2f Renderer::interpHermite(int inst0, int inst1, float t) const
+{
+	vector<ofVec2f> const& points =mBeziersPerInstrumentPair.at(inst0).at(inst1);
+	return hermiteSpline(points, t);
+}
+
+
+
