@@ -27,6 +27,6 @@ public:
 private:
 	float mElapsedTime;
 	float mDt;
-	Renderer mRenderer;
+	Renderer* mRenderer;
 //	OscReceiver mOscReceiver;
 };

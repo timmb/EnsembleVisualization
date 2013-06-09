@@ -3,11 +3,13 @@
 EnsembleVisualization::EnsembleVisualization()
 : mElapsedTime(-1.)
 , mDt(1.)
-{}
+{
+}
 
 //-------------------------------------------------------------
 void EnsembleVisualization::setup(){
-	mRenderer.setState(State::randomState(0));
+	mRenderer = new Renderer;
+	mRenderer->setState(State::randomState(0));
 }
 
 //--------------------------------------------------------------
@@ -20,13 +22,15 @@ void EnsembleVisualization::update(){
 
 //--------------------------------------------------------------
 void EnsembleVisualization::draw(){
-	mRenderer.draw(mElapsedTime, mDt);
+	mRenderer->draw(mElapsedTime, mDt);
 }
 
 //--------------------------------------------------------------
 void EnsembleVisualization::keyPressed(int key){
 	if (key=='s')
-		mRenderer.setState(State::randomState(ofGetElapsedTimef()));
+		mRenderer->setState(State::randomState(ofGetElapsedTimef()));
+	if (key==' ')
+		mRenderer->debugDraw = !mRenderer->debugDraw;
 }
 
 
@@ -56,7 +60,16 @@ void EnsembleVisualization::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void EnsembleVisualization::mousePressed(int x, int y, int button){
-
+	if (button==0)
+	{
+	ofVec2f p = toNorm(x,y);
+	mRenderer->points.push_back(p);
+	}
+	else if (button==2 && !mRenderer->points.empty())
+	{
+		mRenderer->points.pop_back();
+	}
+	std::cout << "Points" << mRenderer->points << endl;
 }
 
 //--------------------------------------------------------------
