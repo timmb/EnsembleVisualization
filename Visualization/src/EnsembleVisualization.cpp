@@ -63,13 +63,13 @@ void EnsembleVisualization::mousePressed(int x, int y, int button){
 	if (button==0)
 	{
 	ofVec2f p = toNorm(x,y);
-	mRenderer->points.push_back(p);
+	mRenderer->addPoint(p);
 	}
-	else if (button==2 && !mRenderer->points.empty())
+	else if (button==2)
 	{
-		mRenderer->points.pop_back();
+		mRenderer->removePoint();
 	}
-	std::cout << "Points" << mRenderer->points << endl;
+	std::cout << "Points" << mRenderer->points() << endl;
 }
 
 //--------------------------------------------------------------
