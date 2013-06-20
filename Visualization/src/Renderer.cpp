@@ -45,52 +45,7 @@ Renderer::Renderer()
 	mPoints.push_back(ofVec2f(0.98, -0.35));
 	mPoints.push_back(ofVec2f(0.97, 0.98));
 	updateBezierPoints();
-//
-//	
-//	
-////	ofEnableNormalizedTexCoords();
-////	ofImage particleImage;
-//	const int dim = 64;
-////	particleImage.allocate(dim, dim, OF_IMAGE_GRAYSCALE);
-//	GLfloat particleImage[dim*dim*4];
-//	for (int i=0; i<dim; i++)
-//	{
-//		float y = float(2*i)/dim - 1.f;
-//		for (int j=0; j<dim; j++)
-//		{
-//			float x = float(2*j)/dim - 1.f;
-//			float invRadius = max(0.f,1.f-ofVec2f(x, y).length());
-////			particleImage.setColor(j, i, ofColor(ofColor::limit()*(1.f-radius)));
-//			for (int k=0; k<4; ++k) {
-//				int index = 4*(i*dim+j)+k;
-//				printf("index %d\n", index);
-//				if (index==10860)
-//					int x=0;
-//				printf("radius %f\n", invRadius);
-//				particleImage[4*(i*dim+j)+k] = invRadius;// (GLubyte) int(255*invRadius);
-////				printf("brightness %f\n", (unsigned char) (255*invRadius));
-//				printf("particleimage %f\n", particleImage[4*(i*dim+j)+k]);
-////				particleImage[4*(i*dim+j)+k] = 255- particleImage[4*(i*dim+j)+k];
-//			}
-//		}
-//	}
-////	particleImage.loadImage("/Users/tim/Pictures/hiroshi-sugimoto-e69d89e69cace58d9ae58fb8-25.jpg");
-////	mParticleTex.allocate(particleImage);
-////	mParticleTex.loadData(particleImage);
-////	tmp.loadImage("/Users/tim/Pictures/hiroshi-sugimoto-e69d89e69cace58d9ae58fb8-25.jpg");
-//	glActiveTexture(GL_TEXTURE0);
-//	glGenTextures(1, &mTex);
-//	glBindTexture(GL_TEXTURE_2D, mTex);
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dim, dim, 0, GL_RGBA, GL_FLOAT, particleImage);
-////	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
-//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-//	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-////	gluBuild2DMipmaps( GL_TEXTURE_2D, 3, dim, dim, GL_RGBA, GL_FLOAT, particleImage );
-//	glBindTexture(GL_TEXTURE_2D, NULL);
-//	printf("mtex %d\n", mTex);
+
 }
 
 Renderer::~Renderer()
@@ -102,7 +57,6 @@ void Renderer::draw(float elapsedTime, float dt)
 {
 	mx = ofGetMouseX() / (float)ofGetWidth();
 	my = ofGetMouseY() / (float)ofGetHeight();
-//	printf("mx %f my %f\n", mx, my);
 	
 	glClearColor(0,0,0,0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -112,22 +66,10 @@ void Renderer::draw(float elapsedTime, float dt)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	
-//	mParticleTex.loadData(tmp);
-//	mParticleTex.draw(ofRectangle(-1,-1,2,2));
-//	glColor4f(1,1,1,1);
-//	glEnable(GL_TEXTURE_2D);
-//	glActiveTexture(GL_TEXTURE0);
-//	glBindTexture(GL_TEXTURE_2D, mTex);
-//	drawQuad(ofVec2f(), ofVec2f(2,2));
-//	glBindTexture(GL_TEXTURE_2D, 0);
-//	return;
-	
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	
-//	mParticleTex.bind();
 	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, mTex);
 	glBindTexture(GL_TEXTURE_2D, mParticleTex.getTextureData().textureID);
 	
 	glMatrixMode(GL_TEXTURE);
@@ -138,9 +80,6 @@ void Renderer::draw(float elapsedTime, float dt)
 	int N = 30000;
 	map<int,int> pCount;
 	map<int,int> qCount;
-//	GLfloat particles[2*N];
-//	if (ofGetFrameNum()%10==0)
-//		cout << mx << "  " << my << endl;
 	for (int i=0; i<N; ++i)
 	{
 		ofSeedRandom(i*12421232);
@@ -150,16 +89,8 @@ void Renderer::draw(float elapsedTime, float dt)
 		t *= min(1.f, t+0.2f);
 		int p = i%NUM_INSTRUMENTS;
 		int q = (i/NUM_INSTRUMENTS)%NUM_INSTRUMENTS; // dest
-//		if (p!=2 || q!=5)
-//			continue;
 		ofVec2f const& orig = mState.instruments.at(p).pos;
 		ofVec2f const& dest = mState.instruments.at(q).pos;
-//		float deviation = ofRandom(mx-0.3, mx);
-//		deviation = pow(deviation, my*5);
-//		ofVec2f mid = dest.middled(orig) + (dest-orig).getRotatedRad(HALF_PI).normalized()*deviation;
-//		interp.push_back(mid);
-//		interp.push_back(dest);
-//		ofVec2f point = interp.sampleAt(t);
 		ofVec2f point;
 		if (hermite)
 		{
@@ -179,24 +110,12 @@ void Renderer::draw(float elapsedTime, float dt)
 		float scaleFactor = 1.+2*cos(ofRandom(-0.5, 0.5)) * 0.7;
 		float size = 0.012f *scaleFactor;
 		point += ofVec2f(cos(TWO_PI*noise+noise3), sin(TWO_PI*noise+noise3)) * (0.015+(noise2*0.02-0.05) + 0.03*noise3);
-//		point += my*ofVec2f(cos(p*q+ofRandom(TWO_PI)), sin(p*q+ofRandom(TWO_PI)));
-//		point += 1.f/exp(my*p*q+ofRandom(TWO_PI))*(ofVec2f() - point);
-//		particles[2*i] = point.x;
-//		particles[2*i+1] = point.y;
-//		ofRect(point, 0.02, 0.02);
-//		drawQuad(point, ofVec2f(0.02, 0.02));
 		float redness = 0.f;
 		if (ofRandom(1)>0.94)
 			redness = ofRandom(0.3, 0.7);
 		glColor4f(0.94,1-redness*redness,1-redness, brightness);
 		mParticleTex.draw(point, size, size);
 	}
-//	glPointSize(3);
-//	glEnableClientState(GL_VERTEX_ARRAY);
-//	glVertexPointer(2, GL_FLOAT, 0, particles);
-//	glDrawArrays(GL_POINTS, 0, N);
-//	glDisableClientState(GL_VERTEX_ARRAY);
-//	mParticleTex.unbind();
 	glBindTexture(GL_TEXTURE_2D, NULL);
 	
 	if (mState.debugMode)
@@ -350,15 +269,6 @@ void Renderer::drawQuad(ofVec2f const& pos, ofVec2f const& size)
 		1., 1.,
 		1., 0.
 	};
-//	glBegin(GL_TRIANGLE_FAN);
-//	for (int i=0; i<4; ++i)
-//	{
-//		glTexCoord2f(uvs[2*i], uvs[2*i+1]);
-//		glVertex2f(vertices[2*i], vertices[2*i+1]);
-//	}
-//	glEnd();
-//	glPopMatrix();
-//	return;
 	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glTexCoordPointer(2, GL_FLOAT, 0, uvs);
