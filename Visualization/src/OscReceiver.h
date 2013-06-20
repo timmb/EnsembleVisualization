@@ -15,18 +15,27 @@ class OscReceiver
 {
 public:
 	OscReceiver();
-	void setup(int port);
+	void setup(int listenPort, std::string stabilizerHost, int stabilizerPort);
 	void update(float elapsedTime, float dt);
 	
 	bool hasNewState() const;
-//	State state() const;
+	State state() const;
 
 
 	/// For debugging
 	std::string status() const;
-	
+
 private:
 	ofxOscReceiver mOsc;
-//	State mState;
+	ofxOscSender mSender;
+	State mState;
 	
+	int mListenPort;
+	std::string mStabilizerHost;
+	int mStabilizerPort;
+	
+	bool mHasNewState;
+	float mTimeListenPortMessageWasLastSent;
+	bool mHasANewStateEverHappened;
+	bool mIsSetup;
 };

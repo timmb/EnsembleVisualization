@@ -3,6 +3,10 @@
 EnsembleVisualization::EnsembleVisualization()
 : mElapsedTime(-1.)
 , mDt(1.)
+, mStabilizerHost("127.0.0.1")
+, mStabilizerPort(1123)
+, mListenPort(12378)
+, mRenderer(NULL)
 {
 }
 
@@ -10,14 +14,26 @@ EnsembleVisualization::EnsembleVisualization()
 void EnsembleVisualization::setup(){
 	mRenderer = new Renderer;
 	mRenderer->setState(State::randomState(0));
+	mOscReceiver.setup(mListenPort, mStabilizerHost, mStabilizerPort);
 }
 
 //--------------------------------------------------------------
 void EnsembleVisualization::update(){
-	float t =ofGetElapsedTimef();
+	float t = ofGetElapsedTimef();
 	float dt = t - mElapsedTime;
 	mElapsedTime = t;
-
+	mOscReceiver.update(mElapsedTime, dt);
+	if (mOscReceiver.hasNewState())
+	{
+		mRenderer->setState(mOscReceiver.state());
+	}
+	// debugging
+	if (ofGetFrameNum()%30==0)
+	{
+		cout << mOscReceiver.status() << endl;
+		cout << "State at time "<<mElapsedTime<<"\n"
+		<< mOscReceiver.state() << endl;
+	}
 }
 
 //--------------------------------------------------------------

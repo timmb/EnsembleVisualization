@@ -39,7 +39,7 @@ struct Instrument
 	std::vector<float> connections;
 	/// list of recent notes
 	std::deque<Note> notes;
-
+	
 	Instrument(ofVec2f const& pos_=ofVec2f())
 	: pos(pos_)
 	, connections(NUM_INSTRUMENTS)
@@ -54,7 +54,13 @@ struct State
 	std::vector<Instrument> instruments;
 	float narrative;
 
+	/// Max age of notes that are kept
+	static float sMaxNoteAge;
+	/// Max number of notes per instrument
+	static int sMaxNumNotes;
+	
 	State();
+	void update(float elapsedTime, float dt);
 	static State randomState(float elapsedTime);
 };
 std::ostream& operator<<(std::ostream& out, State const& state);

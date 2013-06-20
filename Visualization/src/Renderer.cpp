@@ -140,8 +140,8 @@ void Renderer::draw(float elapsedTime, float dt)
 	map<int,int> pCount;
 	map<int,int> qCount;
 //	GLfloat particles[2*N];
-	if (ofGetFrameNum()%10==0)
-		cout << mx << "  " << my << endl;
+//	if (ofGetFrameNum()%10==0)
+//		cout << mx << "  " << my << endl;
 	for (int i=0; i<N; ++i)
 	{
 		ofSeedRandom(i*12421232);

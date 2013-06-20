@@ -13,6 +13,9 @@
 using namespace std;
 
 
+float State::sMaxNoteAge = 600.f;
+int State::sMaxNumNotes = 500;
+
 
 State::State()
 : narrative(0.)
@@ -22,6 +25,22 @@ State::State()
 	{
 		float theta = float(i)/NUM_INSTRUMENTS * TWO_PI;
 		instruments.at(i) = Instrument(ofVec2f(cos(theta), sin(theta)));
+	}
+}
+
+
+void State::update(float elapsedTime, float dt)
+{
+	/// Important to prevent a potential bounds error in the while condition
+	sMaxNumNotes = max(0, sMaxNumNotes);
+	for (int i=0; i<instruments.size(); ++i)
+	{
+		deque<Note>& notes = instruments[i].notes;
+		while (notes.size()>sMaxNumNotes
+			   || (!notes.empty() && elapsedTime - notes.front().time > sMaxNoteAge))
+		{
+			notes.pop_front();
+		}
 	}
 }
 

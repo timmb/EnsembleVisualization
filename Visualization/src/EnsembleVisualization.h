@@ -25,8 +25,13 @@ public:
 	void gotMessage(ofMessage msg);
 	
 private:
+	int mListenPort;
+	std::string mStabilizerHost;
+	int mStabilizerPort;
+	
 	float mElapsedTime;
 	float mDt;
 	Renderer* mRenderer;
-//	OscReceiver mOscReceiver;
+	OscReceiver mOscReceiver;
+	
 };
