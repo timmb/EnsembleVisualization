@@ -413,7 +413,7 @@ T Renderer::hermiteSpline(vector<T> const& points, float t)
 	ofVec2f tangent1 =
 		segment+2>=points.size()? ofVec2f()
 								: points[segment+2]-points[segment];
-	return hermiteSpline(points[segment], points[segment+1]-points[segment], points[segment+1], points[segment+2]-points[segment], p);
+	return hermiteSpline(points[segment], tangent0, points[segment+1], tangent1, p);
 	
 }
 
