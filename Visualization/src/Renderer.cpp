@@ -162,7 +162,60 @@ struct VecComparer
 map<ofVec2f const*, float> VecComparer::mDistSq;
 
 void Renderer::updateBezierPoints()
-{
+{	
+	// alternative method
+	mBeziersPerInstrumentPair.clear();
+	const int n = mState.instruments.size();
+	auto const& instruments = mState.instruments;
+	for (int i=0; i<n; ++i)
+	{
+		ofVec2f orig = instruments.at(i).pos;
+		mBeziersPerInstrumentPair[i] = map<int, vector<ofVec2f> >();
+		ofVec2f last = orig;
+		for (int j=0; j<n; ++j)
+		{
+			ofVec2f dest = instruments.at(j).pos;
+			const int NUM_CONTROL_POINTS = min<int>(4, mPoints.size());
+			vector<ofVec2f> controlPoints = mPoints;
+			vector<ofVec2f> pointsFromOrigin;
+			pointsFromOrigin.push_back(orig);
+			vector<ofVec2f> pointsFromDest;
+			while (pointsFromOrigin.size()+pointsFromDest.size() < NUM_CONTROL_POINTS && !controlPoints.empty())
+			{
+				// find nearest point to either last control point or destination
+				vector<ofVec2f>::iterator nearestControlPointIt = controlPoints.end();
+				float nearestControlPointDist = 99999999999999;
+				bool nearestFromDest;
+				for (auto it=controlPoints.begin(); it!=controlPoints.end(); ++it)
+				{
+					float distSqFromLast = last.distanceSquared(*it);
+					float distSqFromDest = dest.distanceSquared(*it);
+					float overallDistance = sqrt(distSqFromLast + distSqFromDest);
+					if (overallDistance < nearestControlPointDist)
+					{
+						nearestControlPointIt = it;
+						nearestControlPointDist = overallDistance;
+					}
+				}
+				assert(nearestControlPointIt != controlPoints.end());
+				pointsFromOrigin.push_back(*nearestControlPointIt);
+				last = *nearestControlPointIt;
+				controlPoints.erase(nearestControlPointIt);
+			}
+			pointsFromDest.push_back(dest);
+			for (auto v: pointsFromDest)
+				pointsFromOrigin.push_back(v);
+			mBeziersPerInstrumentPair[i][j] = pointsFromOrigin;
+		}
+	}
+	
+	
+	
+	
+	return;
+	
+	if (0)
+	{
 	mBeziersPerInstrumentPair.clear();
 	const int n = mState.instruments.size();
 	for (int i=0; i<n; ++i)
@@ -202,6 +255,7 @@ void Renderer::updateBezierPoints()
 			}
 			mBeziersPerInstrumentPair[i][j] = bezierPoints;
 		}
+	}
 	}
 }
 
