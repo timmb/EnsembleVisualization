@@ -34,6 +34,7 @@ void EnsembleVisualization::update(){
 		cout << "State at time "<<mElapsedTime<<"\n"
 		<< mOscReceiver.state() << endl;
 	}
+	cout << 1.f/dt << endl;
 }
 
 //--------------------------------------------------------------
