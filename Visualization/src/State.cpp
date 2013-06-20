@@ -20,6 +20,7 @@ int State::sMaxNumNotes = 500;
 State::State()
 : narrative(0.)
 , instruments(NUM_INSTRUMENTS)
+, debugMode(false)
 {
 	for (int i=0; i<NUM_INSTRUMENTS; ++i)
 	{

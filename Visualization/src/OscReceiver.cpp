@@ -78,6 +78,15 @@ void OscReceiver::update(float elapsedTime, float dt)
 				}
 			}
 		}
+		else if (address=="/viz/debug" && m.getArgType(0)==OFXOSC_TYPE_INT32)
+		{
+			mState.debugMode = m.getArgAsInt32(0) != 0;
+			// get names if they're there
+			int num_names = min(NUM_INSTRUMENTS, m.getNumArgs()-1);
+			for (int i=0; i<num_names; ++i)
+				if (m.getArgType(i+1)==OFXOSC_TYPE_STRING)
+					mState.instruments.at(i).name = m.getArgAsString(i+1);
+		}
 		mHasNewState = true;
 		mHasANewStateEverHappened = true;
 	}
@@ -114,4 +123,10 @@ std::string OscReceiver::status() const
 		? "OSC Data has been received"
 		: "Yet to receive OSC data");
 	return ss.str();
+}
+
+
+void OscReceiver::toggleDebugMode()
+{
+	mState.debugMode = !mState.debugMode;
 }

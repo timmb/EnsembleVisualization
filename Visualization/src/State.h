@@ -39,6 +39,8 @@ struct Instrument
 	std::vector<float> connections;
 	/// list of recent notes
 	std::deque<Note> notes;
+	/// Just for debugging, the instruments can be provided with names
+	std::string name;
 	
 	Instrument(ofVec2f const& pos_=ofVec2f())
 	: pos(pos_)
@@ -53,6 +55,7 @@ struct State
 {
 	std::vector<Instrument> instruments;
 	float narrative;
+	bool debugMode;
 
 	/// Max age of notes that are kept
 	static float sMaxNoteAge;

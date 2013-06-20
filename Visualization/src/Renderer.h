@@ -32,7 +32,6 @@ public:
 	void removePoint();
 	std::vector<ofVec2f> points() const;
 	
-	bool debugDraw;
 	bool hermite;
 	
 private:

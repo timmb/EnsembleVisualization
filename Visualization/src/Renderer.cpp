@@ -17,8 +17,7 @@ void Renderer::setState(State const& newState)
 }
 
 Renderer::Renderer()
-: debugDraw(false)
-, hermite(true)
+: hermite(true)
 {
 	ofImage blob;
 	blob.loadImage("blob.png");
@@ -200,7 +199,7 @@ void Renderer::draw(float elapsedTime, float dt)
 //	mParticleTex.unbind();
 	glBindTexture(GL_TEXTURE_2D, NULL);
 	
-	if (debugDraw)
+	if (mState.debugMode)
 		drawDebugOverlay();
 }
 
@@ -372,10 +371,26 @@ void Renderer::drawQuad(ofVec2f const& pos, ofVec2f const& size)
 void Renderer::drawDebugOverlay()
 {
 	ofEnableBlendMode(OF_BLENDMODE_ADD);
+	for (Instrument inst: mState.instruments)
+	{
+		for (int i=0; i<mState.instruments.size(); ++i)
+		{
+			float f = 15*inst.connections.at(i);
+			glColor4f(1,1,1,min(1.f,f)*0.8);
+			ofSetLineWidth(f);
+			ofLine(inst.pos, mState.instruments.at(i).pos);
+		}
+	}
 	glColor4f(1,1,1,0.8);
 	for (Instrument inst: mState.instruments)
 	{
 		ofEllipse(inst.pos, 0.2, 0.2);
+	}
+	ofSetLineWidth(1.f);
+	glColor4f(0,0,0,1);
+	for (Instrument inst: mState.instruments)
+	{
+		ofDrawBitmapString(inst.name, inst.pos - ofVec2f(0.04, 0));
 	}
 	glColor4f(1,0,0,0.5);
 	for (ofVec2f point: mPoints)

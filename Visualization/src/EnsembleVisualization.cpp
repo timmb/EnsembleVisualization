@@ -46,7 +46,7 @@ void EnsembleVisualization::keyPressed(int key){
 	if (key=='s')
 		mRenderer->setState(State::randomState(ofGetElapsedTimef()));
 	if (key==' ')
-		mRenderer->debugDraw = !mRenderer->debugDraw;
+		mOscReceiver.toggleDebugMode();
 }
 
 

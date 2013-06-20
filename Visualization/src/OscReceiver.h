@@ -21,6 +21,9 @@ public:
 	bool hasNewState() const;
 	State state() const;
 
+	/// OSC receiver manages the state but debug mode can be
+	/// triggered manually here
+	void toggleDebugMode();
 
 	/// For debugging
 	std::string status() const;
