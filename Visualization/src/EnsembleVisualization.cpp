@@ -28,13 +28,16 @@ void EnsembleVisualization::update(){
 		mRenderer->setState(mOscReceiver.state());
 	}
 	// debugging
-	if (ofGetFrameNum()%30==0)
+	if (0)
 	{
-		cout << mOscReceiver.status() << endl;
-		cout << "State at time "<<mElapsedTime<<"\n"
-		<< mOscReceiver.state() << endl;
+		if (ofGetFrameNum()%30==0)
+		{
+			cout << mOscReceiver.status() << endl;
+			cout << "State at time "<<mElapsedTime<<"\n"
+			<< mOscReceiver.state() << endl;
+		}
+		cout << 1.f/dt << endl;
 	}
-	cout << 1.f/dt << endl;
 }
 
 //--------------------------------------------------------------

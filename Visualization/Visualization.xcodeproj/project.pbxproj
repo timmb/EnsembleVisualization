@@ -77,6 +77,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		223A8679177356D50058843B /* particles.vert */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; name = particles.vert; path = bin/data/particles.vert; sourceTree = SOURCE_ROOT; };
+		223A867B177356EE0058843B /* particles.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; name = particles.frag; path = bin/data/particles.frag; sourceTree = "<group>"; };
+		223A867C177356FD0058843B /* particles.geom */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; name = particles.geom; path = bin/data/particles.geom; sourceTree = "<group>"; };
 		22F1815C17637DDC00FF1CC6 /* EnsembleVisualization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EnsembleVisualization.cpp; sourceTree = "<group>"; };
 		22F1815D17637DDC00FF1CC6 /* EnsembleVisualization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnsembleVisualization.h; sourceTree = "<group>"; };
 		22F1815E17637DDC00FF1CC6 /* OscReceiver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OscReceiver.cpp; sourceTree = "<group>"; };
@@ -172,6 +175,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		223A867A177356DC0058843B /* shaders */ = {
+			isa = PBXGroup;
+			children = (
+				223A8679177356D50058843B /* particles.vert */,
+				223A867B177356EE0058843B /* particles.frag */,
+				223A867C177356FD0058843B /* particles.geom */,
+			);
+			name = shaders;
+			sourceTree = "<group>";
+		};
 		22F1816817637E0100FF1CC6 /* ofxOsc */ = {
 			isa = PBXGroup;
 			children = (
@@ -335,6 +348,7 @@
 		E4B69B4A0A3A1720003C02F2 = {
 			isa = PBXGroup;
 			children = (
+				223A867A177356DC0058843B /* shaders */,
 				E4B6FCAD0C3E899E008CF71C /* openFrameworks-Info.plist */,
 				E4EB6923138AFD0F00A09F29 /* Project.xcconfig */,
 				E4B69E1C0A3A1BDC003C02F2 /* src */,
@@ -550,7 +564,7 @@
 					"$(OF_CORE_HEADERS)",
 					"$(MY_EXTRA_HEADERS)",
 				);
-				LLVM_LTO = YES;
+				LLVM_LTO = NO;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				OTHER_CPLUSPLUSFLAGS = (
 					"-D__MACOSX_CORE__",

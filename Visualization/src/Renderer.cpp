@@ -77,20 +77,26 @@ void Renderer::draw(float elapsedTime, float dt)
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
 
-	int N = 30000;
+	int N = 60000;
 	map<int,int> pCount;
 	map<int,int> qCount;
 	for (int i=0; i<N; ++i)
 	{
+		int p = i%NUM_INSTRUMENTS;
+		int q = (i/NUM_INSTRUMENTS)%NUM_INSTRUMENTS; // dest
+		if (p<=q)
+			continue;
 		ofSeedRandom(i*12421232);
 		float period = ofRandom(50.)+10;
 		float phase = ofRandom(1.)*period;
 		float t = fmod((elapsedTime+phase)/period, 1.f);
 		t *= min(1.f, t+0.2f);
-		int p = i%NUM_INSTRUMENTS;
-		int q = (i/NUM_INSTRUMENTS)%NUM_INSTRUMENTS; // dest
 		ofVec2f const& orig = mState.instruments.at(p).pos;
 		ofVec2f const& dest = mState.instruments.at(q).pos;
+		float amount = mState.instruments.at(p).connections.at(q);
+//		printf("p %d q %d amount %f\n", p, q, amount);
+//		if (amount<0.5)
+//			continue;
 		ofVec2f point;
 		if (hermite)
 		{
@@ -106,9 +112,9 @@ void Renderer::draw(float elapsedTime, float dt)
 		float noise3 = ofNoise(point.x, point.y, elapsedTime*0.007);
 		noise *= noise*noise;
 		ofSeedRandom(i*124212);
-		float brightness = sq(ofRandom(1)*0.63);
+		float brightness = sq(ofRandom(1)*0.63) * (0.3+0.7*amount);
 		float scaleFactor = 1.+2*cos(ofRandom(-0.5, 0.5)) * 0.7;
-		float size = 0.012f *scaleFactor;
+		float size = 0.012f *scaleFactor * amount;
 		point += ofVec2f(cos(TWO_PI*noise+noise3), sin(TWO_PI*noise+noise3)) * (0.015+(noise2*0.02-0.05) + 0.03*noise3);
 		float redness = 0.f;
 		if (ofRandom(1)>0.94)

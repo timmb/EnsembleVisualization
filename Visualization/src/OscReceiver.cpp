@@ -129,4 +129,9 @@ std::string OscReceiver::status() const
 void OscReceiver::toggleDebugMode()
 {
 	mState.debugMode = !mState.debugMode;
+	// send to stabilizer to prevent it overriding our value
+	ofxOscMessage m;
+	m.setAddress("/viz/debug");
+	m.addIntArg(int(mState.debugMode));
+	mSender.sendMessage(m);
 }
