@@ -47,8 +47,9 @@ private:
 	
 	// editing mode:
 	static const int NONE = -1;
-	int mOriginInstrument;
-	int mDestInstrument;
+	int mEditingInstruments[2];
+	void editInstrument(int inst);
+	bool isEditing(int inst) { return mEditingInstruments[0]==inst || mEditingInstruments[1] == inst; }
 	vector<bool> mInstrumentVisibility;
 
 };

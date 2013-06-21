@@ -123,12 +123,14 @@ void Renderer::draw(float elapsedTime, float dt)
 void Renderer::setControlPoints(ControlPointMap const& points)
 {
 	mControlPoints = points;
+	updateCalculatedControlPoints();
 }
 
 ControlPointMap Renderer::controlPoints() const
 {
 	return mControlPoints;
 }
+
 
 struct VecComparer
 {

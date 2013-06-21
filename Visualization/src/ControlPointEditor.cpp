@@ -12,8 +12,6 @@
 ControlPointEditor::ControlPointEditor()
 : mRenderer(NULL)
 , mIsInSetupMode(false)
-, mOriginInstrument(NONE)
-, mDestInstrument(NONE)
 , mInstrumentVisibility(NUM_INSTRUMENTS, true)
 {
 	for (int i=0; i<NUM_INSTRUMENTS; i++)
@@ -24,6 +22,8 @@ ControlPointEditor::ControlPointEditor()
 			mControlPoints[i][j] = std::vector<ofVec2f>();
 		}
 	}
+	mEditingInstruments[0] = NONE;
+	mEditingInstruments[1] = NONE;
 }
 
 ControlPointEditor::~ControlPointEditor()
@@ -169,8 +169,7 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 		return;
 	auto instruments = state.instruments;
 	
-	ofFloatColor originCol(0,1,0,0.8);
-	ofFloatColor destCol(1,0,0,0.8);
+	ofFloatColor editCol(0,1,0,0.8);
 	ofFloatColor visibleCol(1,1,1,0.4);
 	ofFloatColor editingControlPoint(.4,.4,1,0.8);
 	ofFloatColor notEditingControlPoint(.5,.5,1,0.2);
@@ -189,10 +188,8 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 		if (!mInstrumentVisibility.at(i))
 			continue;
 		Instrument inst = instruments.at(i);
-		if (i==mOriginInstrument)
-			ofSetColor(originCol);
-		else if (i==mDestInstrument)
-			ofSetColor(destCol);
+		if (i==mEditingInstruments[0] || i==mEditingInstruments[1])
+			ofSetColor(editCol);
 		else
 			ofSetColor(visibleCol);
 		ofEllipse(inst.pos, 0.2, 0.2);
@@ -207,12 +204,12 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 	//	glColor4f(1,0,0,0.5);
 	for (int i=0; i<instruments.size(); ++i)
 	{
-		for (int j=0; j<instruments.size(); ++j)
+		for (int j=0; j<i; ++j)
 		{
 			if (!mInstrumentVisibility.at(i) || !mInstrumentVisibility.at(j))
 				continue;
 			auto const& points = mControlPoints[i][j];
-			if (i==mOriginInstrument && j==mDestInstrument)
+			if (isEditing(i) && isEditing(j))
 				ofSetColor(editingControlPoint);
 			else if (mInstrumentVisibility.at(i) && mInstrumentVisibility.at(j))
 				ofSetColor(notEditingControlPoint);
@@ -234,20 +231,17 @@ void ControlPointEditor::keyPressed(int key, bool ctrlPressed, bool altPressed)
 {
 	if (mRenderer->state().debugMode)
 	{
-		if ((key=='-' || ('0' <= key && key < '8')))
+		if (key=='d')
 		{
-			int inst = key=='-'? -1 : key - '0';
+			editInstrument(NONE);
+			editInstrument(NONE);
+		}
+		if (key=='-' || ('0' <= key && key < '8'))
+		{
+			int inst = key=='-'? NONE : key - '0';
 			if (ctrlPressed && mIsInSetupMode)
 			{
-				mOriginInstrument = inst;
-				if (mDestInstrument == inst)
-					mDestInstrument = NONE;
-			}
-			else if (altPressed && mIsInSetupMode)
-			{
-				mDestInstrument = inst;
-				if (mOriginInstrument == inst)
-					mOriginInstrument = NONE;
+				editInstrument(inst);
 			}
 			else if (!altPressed && !ctrlPressed)
 			{
@@ -267,8 +261,8 @@ void ControlPointEditor::keyPressed(int key, bool ctrlPressed, bool altPressed)
 			mIsInSetupMode = !mIsInSetupMode;
 			if (!mIsInSetupMode)
 			{
-				mOriginInstrument = NONE;
-				mDestInstrument = NONE;
+				editInstrument(NONE);
+				editInstrument(NONE);
 			}
 		}
 		else if (key=='c')
@@ -291,13 +285,22 @@ void ControlPointEditor::mousePressed(ofVec2f const& pos, int button)
 {
 	static const int LEFT = 0;
 	static const int RIGHT = 2;
-	if (mOriginInstrument!=-1 && mDestInstrument!=-1 && mOriginInstrument!=mDestInstrument)
+	if (!isEditing(NONE))
 	{
-		auto& points = mControlPoints.at(mOriginInstrument).at(mDestInstrument);
+		auto& points0 = mControlPoints.at(mEditingInstruments[0]).at(mEditingInstruments[1]);
+		auto& points1 = mControlPoints.at(mEditingInstruments[1]).at(mEditingInstruments[0]);
 		if (button==LEFT)
-			points.push_back(pos);
-		else if (button==RIGHT && !points.empty())
-			points.pop_back();
+		{
+			points0.push_back(pos);
+			points1.push_back(pos);
+		}
+		else if (button==RIGHT)
+		{
+			if (!points0.empty())
+				points0.pop_back();
+			if (!points1.empty())
+				points1.pop_back();
+		}
 	}
 	notify();
 }
@@ -307,10 +310,10 @@ void ControlPointEditor::notify()
 	mRenderer->setControlPoints(mControlPoints);
 	mStatus = "S to save, L to load, C to draw connections, P to print state, R to randomize state,\nspace to toggle debug interface, E to toggle control point editor";
 	if (mIsInSetupMode)
-		mStatus += "\nOrigin: "+ofToString(mOriginInstrument)+" "
-		+ getName(mOriginInstrument)+", Dest "+ofToString(mDestInstrument)+" "
-		+ getName(mDestInstrument)+"\n<num> to change visibility, control <num> to change origin, alt <num> to change dest"
-		+ "\n(use '-' for no/all instrument(s)), Ctrl Backspace to clear all control points";
+		mStatus += "\nEditing: "+ofToString(mEditingInstruments[0])+" "
+		+ getName(mEditingInstruments[0])+" and "+ofToString(mEditingInstruments[1])+" "
+		+ getName(mEditingInstruments[1])+"\n<num> to change visibility, control <num> to select instruments"
+		+ "\n(use '-' for no/all instrument(s)), d to deselect, Ctrl Backspace to clear all control points";
 }
 
 string ControlPointEditor::getName(int instrumentNumber) const
@@ -319,6 +322,15 @@ string ControlPointEditor::getName(int instrumentNumber) const
 		return "(none)";
 	else if (instrumentNumber<NUM_INSTRUMENTS)
 		return mRenderer->state().instruments.at(instrumentNumber).name;
-	else return "error";
-	
+	else
+		return "error";
+}
+
+void ControlPointEditor::editInstrument(int inst)
+{
+	if (inst!=NONE && isEditing(inst))
+		return;
+	if (mEditingInstruments[1] != NONE || inst==NONE)
+		mEditingInstruments[0] = mEditingInstruments[1];
+	mEditingInstruments[1] = inst;
 }
