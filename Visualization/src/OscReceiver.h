@@ -20,6 +20,8 @@ public:
 	
 	bool hasNewState() const;
 	State state() const;
+	/// Manually set state - will be overwritten by any osc data
+	void setState(State const& state);
 
 	/// OSC receiver manages the state but debug mode can be
 	/// triggered manually here

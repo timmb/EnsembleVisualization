@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "State.h"
 #include "OscReceiver.h"
+#include "ControlPointEditor.h"
 
 class EnsembleVisualization : public ofBaseApp
 {
@@ -33,5 +34,15 @@ private:
 	float mDt;
 	Renderer* mRenderer;
 	OscReceiver mOscReceiver;
+	ControlPointEditor mEditor;
 	
+	// for setting the control points. only shown on debug
+	void updateStatus();
+	std::string getName(int instrumentNumber);
+	std::string mStatus;
+	/// which instrument control points are visible
+	vector<bool> mInstrumentVisibility;
+	/// being currently edited - set to -1 for none
+	int mCurrentOrig;
+	int mCurrentDest;
 };

@@ -24,8 +24,10 @@ public:
 	virtual ~Renderer();
 	
 	void setState(State const& newState);
+	State state() const;
 
 	void draw(float elapsedTime, float dt);
+	void setEditingMode(vector<bool> const& instrumentVisibility, int originInstrument, int destInstrument);
 	
 	/// control points for beziers
 	void addPoint(ofVec2f const&);
@@ -45,8 +47,12 @@ private:
 //	ofImage tmp;
 	GLuint mTex;
 	std::vector<ofVec2f> mPoints;
-	void updateBezierPoints();
-	std::map<int,std::map<int,std::vector<ofVec2f> > > mBeziersPerInstrumentPair;
+//	void updateBezierPoints();
+	/// just control points
+	std::map<int,std::map<int,std::vector<ofVec2f> > > mControlPoints;
+	/// including start and end points too
+	std::map<int,std::map<int,std::vector<ofVec2f> > > mCalculatedControlPoints;
+	void updateCalculatedControlPoints();
 	
 	float mx, my;
 	
@@ -57,6 +63,11 @@ private:
 	static T hermiteSpline(std::vector<T> const& points, float t);
 	
 	ofVec2f interpHermite(int inst0, int inst1, float t) const;
+	
+	// editing mode:
+	int mOriginInstrument;
+	int mDestInstrument;
+	vector<bool> mInstrumentVisibility;
 };
 
 template<typename T, typename L>

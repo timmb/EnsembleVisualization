@@ -112,6 +112,12 @@ State OscReceiver::state() const
 	return mState;
 }
 
+void OscReceiver::setState(State const& state)
+{
+	mState = state;
+	mHasNewState = true;
+}
+
 
 /// For debugging
 std::string OscReceiver::status() const
@@ -134,4 +140,5 @@ void OscReceiver::toggleDebugMode()
 	m.setAddress("/viz/debug");
 	m.addIntArg(int(mState.debugMode));
 	mSender.sendMessage(m);
+	mHasNewState = true;
 }

@@ -48,6 +48,7 @@ void State::update(float elapsedTime, float dt)
 
 State State::randomState(float elapsedTime)
 {
+	ofSeedRandom(ofGetFrameNum());
 	State state;
 	for (int i=0; i<NUM_INSTRUMENTS; i++)
 	{

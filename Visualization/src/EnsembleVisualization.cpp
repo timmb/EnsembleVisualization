@@ -1,4 +1,5 @@
 #include "EnsembleVisualization.h"
+#include <GLUT/GLUT.h>
 
 EnsembleVisualization::EnsembleVisualization()
 : mElapsedTime(-1.)
@@ -7,6 +8,9 @@ EnsembleVisualization::EnsembleVisualization()
 , mStabilizerPort(1123)
 , mListenPort(12378)
 , mRenderer(NULL)
+, mInstrumentVisibility(NUM_INSTRUMENTS, true)
+, mCurrentOrig(-1)
+, mCurrentDest(-1)
 {
 }
 
@@ -15,6 +19,8 @@ void EnsembleVisualization::setup(){
 	mRenderer = new Renderer;
 	mRenderer->setState(State::randomState(0));
 	mOscReceiver.setup(mListenPort, mStabilizerHost, mStabilizerPort);
+	mEditor.setup(mRenderer);
+	updateStatus();
 }
 
 //--------------------------------------------------------------
@@ -38,28 +44,64 @@ void EnsembleVisualization::update(){
 		}
 		cout << 1.f/dt << endl;
 	}
+	mRenderer->setEditingMode(mInstrumentVisibility, mCurrentOrig, mCurrentDest);
 }
 
 //--------------------------------------------------------------
 void EnsembleVisualization::draw(){
 	mRenderer->draw(mElapsedTime, mDt);
+	ofSetupScreen();
+	if (mOscReceiver.state().debugMode)
+	{
+		ofSetColor(255, 163, 183);
+		ofDrawBitmapString(mStatus, ofVec2f(10, 10));
+	}
 }
 
 //--------------------------------------------------------------
 void EnsembleVisualization::keyPressed(int key){
-	if (key=='s')
-		mRenderer->setState(State::randomState(ofGetElapsedTimef()));
+	if (key=='r')
+		mOscReceiver.setState(State::randomState(ofGetElapsedTimef()));
+	else if (key=='s')
+		mEditor.save();
+	else if (key=='l')
+		mEditor.load();
 	if (key==' ')
 		mOscReceiver.toggleDebugMode();
+	if (key=='-' || ('0'<=key && key < '8'))
+	{
+		int inst;
+		if (key=='-')
+			inst = -1;
+		else
+			inst = key - '0';
+		int mods = glutGetModifiers();
+		cout << mods << endl;
+		// set visibility
+		if (mods == 0)
+		{
+			if (key!=-1)
+				mInstrumentVisibility.at(inst) = !mInstrumentVisibility.at(inst);
+			else
+			{
+				bool visible = !mInstrumentVisibility.at(0);
+				for (int i=0; i<mInstrumentVisibility.size(); ++i)
+					mInstrumentVisibility[i] = visible;
+			}
+		}
+		if (mods & GLUT_ACTIVE_CTRL)
+		{
+			mCurrentOrig = inst;
+		}
+		if (mods & GLUT_ACTIVE_ALT)
+		{
+			mCurrentDest = inst;
+		}
+		updateStatus();
+	}
+	if (key=='p')
+		cout << "Renderer state:\n"<<mRenderer->state()<<endl;
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -90,6 +132,23 @@ void EnsembleVisualization::mousePressed(int x, int y, int button){
 		mRenderer->removePoint();
 	}
 	std::cout << "Points" << mRenderer->points() << endl;
+}
+
+std::string EnsembleVisualization::getName(int instrumentNumber)
+{
+	if (instrumentNumber==-1)
+		return "(none)";
+	else if (instrumentNumber<NUM_INSTRUMENTS)
+		return mOscReceiver.state().instruments.at(instrumentNumber).name;
+	else return "error";
+}
+
+void EnsembleVisualization::updateStatus()
+{
+	mStatus = "Origin: "+ofToString(mCurrentOrig)+" "
+	+ getName(mCurrentOrig)+", Dest "+ofToString(mCurrentDest)+" "
+	+ getName(mCurrentDest)+"\n<num> to change visibility, control <num> to change origin, alt <num> to change dest"
+	+ "\nuse '-' for no instrument";
 }
 
 //--------------------------------------------------------------
