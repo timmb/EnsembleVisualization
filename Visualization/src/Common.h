@@ -11,7 +11,9 @@
 #include <vector>
 #include "ofMain.h"
 #include <iostream>
+#include <map>
 
+typedef std::map<int,std::map<int,std::vector<ofVec2f> > > ControlPointMap;
 
 template <typename T>
 T sq(T const& x)

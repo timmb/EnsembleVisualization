@@ -37,9 +37,7 @@ private:
 	ControlPointEditor mEditor;
 	
 	// for setting the control points. only shown on debug
-	void updateStatus();
 	std::string getName(int instrumentNumber);
-	std::string mStatus;
 	/// which instrument control points are visible
 	vector<bool> mInstrumentVisibility;
 	/// being currently edited - set to -1 for none

@@ -8,4 +8,4 @@ OF_PATH = ../openFrameworks
 OTHER_LDFLAGS = $(OF_CORE_LIBS) 
 HEADER_SEARCH_PATHS = $(OF_CORE_HEADERS)
 
-MY_EXTRA_HEADERS = "/Users/tim/Documents/Programming/Ensemble/EnsembleVisualization/openFrameworks/addons/ofxOsc/libs/oscpack/src/"
+MY_EXTRA_HEADERS = "$(OF_PATH)/addons/ofxOsc/libs/oscpack/src/" "lib/jsoncpp/include"
