@@ -75,6 +75,17 @@ State State::randomState(float elapsedTime)
 	return state;
 }
 
+State State::maximalState(float elapsedTime)
+{
+	State state;
+	for (int i=0; i<NUM_INSTRUMENTS; i++)
+		for (int j=0; j<NUM_INSTRUMENTS; j++)
+		{
+			state.instruments.at(i).connections.at(j) = 1.f;
+		}
+	return state;
+}
+
 
 
 std::ostream& operator<<(std::ostream& out, Note const& note)

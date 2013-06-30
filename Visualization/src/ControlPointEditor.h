@@ -52,5 +52,7 @@ private:
 	bool isEditing(int inst) { return mEditingInstruments[0]==inst || mEditingInstruments[1] == inst; }
 	vector<bool> mInstrumentVisibility;
 
+	template <typename T>
+	void push_front(std::vector<T>& dest, T const& value);
 };
 

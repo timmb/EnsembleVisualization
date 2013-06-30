@@ -63,6 +63,13 @@ void EnsembleVisualization::keyPressed(int key){
 		state.debugMode = d;
 		mOscReceiver.setState(state);
 	}
+	else if (key=='m')
+	{
+		bool d = mOscReceiver.state().debugMode;
+		State state = State::maximalState(ofGetElapsedTimef());
+		state.debugMode = d;
+		mOscReceiver.setState(state);
+	}
 	else if (key=='s')
 		mEditor.save();
 	else if (key=='l')

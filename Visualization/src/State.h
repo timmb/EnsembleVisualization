@@ -65,6 +65,8 @@ struct State
 	State();
 	void update(float elapsedTime, float dt);
 	static State randomState(float elapsedTime);
+	/// All connections are 1.
+	static State maximalState(float elapsedTime);
 };
 std::ostream& operator<<(std::ostream& out, State const& state);
 

@@ -171,7 +171,8 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 	
 	ofFloatColor editCol(0,1,0,0.8);
 	ofFloatColor visibleCol(1,1,1,0.4);
-	ofFloatColor editingControlPoint(.4,.4,1,0.8);
+	float p = sin(elapsedTime)*.5 + .5;
+	ofFloatColor editingControlPoint(.4,1.,.4,0.8);
 	ofFloatColor notEditingControlPoint(.5,.5,1,0.2);
 	
 	// normalized coordinates: 2x2 square centred at origin
@@ -239,11 +240,11 @@ void ControlPointEditor::keyPressed(int key, bool ctrlPressed, bool altPressed)
 		if (key=='-' || ('0' <= key && key < '8'))
 		{
 			int inst = key=='-'? NONE : key - '0';
-			if (ctrlPressed && mIsInSetupMode)
+			if (!ctrlPressed && !altPressed && mIsInSetupMode)
 			{
 				editInstrument(inst);
 			}
-			else if (!altPressed && !ctrlPressed)
+			else if (ctrlPressed && !altPressed)
 			{
 				// change all when - is pressed
 				if (inst == -1)
@@ -287,19 +288,26 @@ void ControlPointEditor::mousePressed(ofVec2f const& pos, int button)
 	static const int RIGHT = 2;
 	if (!isEditing(NONE))
 	{
-		auto& points0 = mControlPoints.at(mEditingInstruments[0]).at(mEditingInstruments[1]);
-		auto& points1 = mControlPoints.at(mEditingInstruments[1]).at(mEditingInstruments[0]);
+		// always consider points from lowest value instrument to
+		// highest value instrument
+		int inst0 = min(mEditingInstruments[0], mEditingInstruments[1]);
+		int inst1 = max(mEditingInstruments[0], mEditingInstruments[1]);
+		
+		auto& points0 = mControlPoints.at(inst0).at(inst1);
+		auto& points1 = mControlPoints.at(inst1).at(inst0);
 		if (button==LEFT)
 		{
 			points0.push_back(pos);
-			points1.push_back(pos);
+			// higher valued instrument we insert the control points
+			// in reverse order
+			points1.insert(points1.begin(), pos);
 		}
 		else if (button==RIGHT)
 		{
 			if (!points0.empty())
 				points0.pop_back();
 			if (!points1.empty())
-				points1.pop_back();
+				points1.erase(points1.begin());
 		}
 	}
 	notify();
@@ -308,12 +316,12 @@ void ControlPointEditor::mousePressed(ofVec2f const& pos, int button)
 void ControlPointEditor::notify()
 {
 	mRenderer->setControlPoints(mControlPoints);
-	mStatus = "S to save, L to load, C to draw connections, P to print state, R to randomize state,\nspace to toggle debug interface, E to toggle control point editor";
+	mStatus = "S to save, L to load, C to draw connections, P to print state, R to randomize state,\nM for maximal state, space to toggle debug interface, E to toggle control point editor";
 	if (mIsInSetupMode)
 		mStatus += "\nEditing: "+ofToString(mEditingInstruments[0])+" "
 		+ getName(mEditingInstruments[0])+" and "+ofToString(mEditingInstruments[1])+" "
-		+ getName(mEditingInstruments[1])+"\n<num> to change visibility, control <num> to select instruments"
-		+ "\n(use '-' for no/all instrument(s)), d to deselect, Ctrl Backspace to clear all control points";
+		+ getName(mEditingInstruments[1])+"\n<num> to select instruments, control <num> to change visibility"
+		+ "\n(use '-' for no/all instrument(s)), d to deselect, Ctrl Backspace to clear all control points\nStart points at low-numbered instrument";
 }
 
 string ControlPointEditor::getName(int instrumentNumber) const
