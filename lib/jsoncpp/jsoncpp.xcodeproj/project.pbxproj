@@ -1,0 +1,160 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXFileReference section */
+		2299AE451795711900464BBA /* AUTHORS */ = {isa = PBXFileReference; lastKnownFileType = text; path = AUTHORS; sourceTree = "<group>"; };
+		2299AE461795711A00464BBA /* devtools */ = {isa = PBXFileReference; lastKnownFileType = folder; path = devtools; sourceTree = "<group>"; };
+		2299AE471795711A00464BBA /* doc */ = {isa = PBXFileReference; lastKnownFileType = folder; path = doc; sourceTree = "<group>"; };
+		2299AE481795711A00464BBA /* doxybuild.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = doxybuild.py; sourceTree = "<group>"; };
+		2299AE491795711A00464BBA /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; path = include; sourceTree = "<group>"; };
+		2299AE4A1795711A00464BBA /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		2299AE4B1795711A00464BBA /* makefiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = makefiles; sourceTree = "<group>"; };
+		2299AE4C1795711A00464BBA /* makerelease.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = makerelease.py; sourceTree = "<group>"; };
+		2299AE4D1795711A00464BBA /* README.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
+		2299AE4E1795711A00464BBA /* scons-tools */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "scons-tools"; sourceTree = "<group>"; };
+		2299AE4F1795711A00464BBA /* SConstruct */ = {isa = PBXFileReference; lastKnownFileType = text; path = SConstruct; sourceTree = "<group>"; };
+		2299AE501795711A00464BBA /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; path = src; sourceTree = "<group>"; };
+		2299AE511795711A00464BBA /* test */ = {isa = PBXFileReference; lastKnownFileType = folder; path = test; sourceTree = "<group>"; };
+		2299AE521795711A00464BBA /* version */ = {isa = PBXFileReference; lastKnownFileType = text; path = version; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		2299AE3F1795711900464BBA = {
+			isa = PBXGroup;
+			children = (
+				2299AE451795711900464BBA /* AUTHORS */,
+				2299AE461795711A00464BBA /* devtools */,
+				2299AE471795711A00464BBA /* doc */,
+				2299AE481795711A00464BBA /* doxybuild.py */,
+				2299AE491795711A00464BBA /* include */,
+				2299AE4A1795711A00464BBA /* LICENSE */,
+				2299AE4B1795711A00464BBA /* makefiles */,
+				2299AE4C1795711A00464BBA /* makerelease.py */,
+				2299AE4D1795711A00464BBA /* README.txt */,
+				2299AE4E1795711A00464BBA /* scons-tools */,
+				2299AE4F1795711A00464BBA /* SConstruct */,
+				2299AE501795711A00464BBA /* src */,
+				2299AE511795711A00464BBA /* test */,
+				2299AE521795711A00464BBA /* version */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		2299AE441795711900464BBA /* jsoncpp */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = 2299AE531795711A00464BBA /* Build configuration list for PBXLegacyTarget "jsoncpp" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = /Users/tim/Documents/Programming/Ensemble/EnsembleVisualization/lib/jsoncpp;
+			dependencies = (
+			);
+			name = jsoncpp;
+			passBuildSettingsInEnvironment = 1;
+			productName = jsoncpp;
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXProject section */
+		2299AE401795711900464BBA /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 2299AE431795711900464BBA /* Build configuration list for PBXProject "jsoncpp" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 2299AE3F1795711900464BBA;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2299AE441795711900464BBA /* jsoncpp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		2299AE411795711900464BBA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx10.6;
+			};
+			name = Debug;
+		};
+		2299AE421795711900464BBA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				COPY_PHASE_STRIP = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				SDKROOT = macosx10.6;
+			};
+			name = Release;
+		};
+		2299AE541795711A00464BBA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				DEBUGGING_SYMBOLS = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = jsoncpp;
+			};
+			name = Debug;
+		};
+		2299AE551795711A00464BBA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = jsoncpp;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2299AE431795711900464BBA /* Build configuration list for PBXProject "jsoncpp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2299AE411795711900464BBA /* Debug */,
+				2299AE421795711900464BBA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2299AE531795711A00464BBA /* Build configuration list for PBXLegacyTarget "jsoncpp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2299AE541795711A00464BBA /* Debug */,
+				2299AE551795711A00464BBA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2299AE401795711900464BBA /* Project object */;
+}
