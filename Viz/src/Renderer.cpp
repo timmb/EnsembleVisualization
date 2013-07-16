@@ -11,6 +11,7 @@
 #include <algorithm>
 #include "cinder/Surface.h"
 #include "cinder/Rand.h"
+#include "cinder/DataSource.h"
 
 using namespace ci;
 using namespace std;
@@ -40,6 +41,20 @@ Renderer::Renderer()
 		for (int j=0; j<NUM_INSTRUMENTS; ++j)
 			mControlPoints[i][j] = vector<ci::Vec2f>();
 	updateCalculatedControlPoints();
+	
+	loadShader();
+}
+
+void Renderer::loadShader()
+{
+	try
+	{
+	mShader = gl::GlslProg::create(DataSourcePath::create(app::getAssetPath("particles.vert")), DataSourcePath::create(app::getAssetPath("particles.frag")));
+	}
+	catch (gl::GlslProgCompileExc e)
+	{
+		cout << "\n*\nError compiling shader:\n" <<e.what()<<endl;
+	}
 }
 
 void Renderer::setEnableDrawConnectionsDebug(bool enabled)
@@ -68,7 +83,7 @@ void Renderer::draw(float elapsedTime, float dt)
 	
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, mParticleTex->getId());
-
+	mShader->bind();
 
 	
 //	glMatrixMode(GL_TEXTURE);
@@ -126,13 +141,12 @@ void Renderer::draw(float elapsedTime, float dt)
 		glColor4f(0.94,1-redness*redness,1-redness, brightness);
 //		gl::draw(mParticleTex, Rectf(point, Vec2f(size, size)));
 		gl::color(ColorAf(1,1,1,1));
-		mParticleTex->bind();
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, mParticleTex->getId());
+//		mParticleTex->bind();
 //		size = 0.1;
 		gl::drawSolidRect(Rectf(point-Vec2f(size, size), point+Vec2f(size, size)));
 
 	}
+	mShader->unbind();
 	glBindTexture(GL_TEXTURE_2D, NULL);
 	
 	if (mEnableDrawConnectionsDebug)
@@ -340,8 +354,8 @@ void Renderer::updateCalculatedControlPoints()
 			ps[0] = mState.instruments.at(i).pos;
 			ps[ps.size()-1] = mState.instruments.at(j).pos;
 			copy(points.begin(), points.end(), ps.begin()+1);
-			cout << "Control points for "<<i<<" to "<<j<<": "<<points <<endl;
-			cout << "Calculated control points for "<<i<<" to "<<j<<": "<<ps <<endl;
+//			cout << "Control points for "<<i<<" to "<<j<<": "<<points <<endl;
+//			cout << "Calculated control points for "<<i<<" to "<<j<<": "<<ps <<endl;
 		}
 }
 

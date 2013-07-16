@@ -72,7 +72,7 @@ State State::randomState(float elapsedTime)
 			state.instruments.at(i).notes.push_back(note);
 		}
 	}
-	std::cout << "Created random state:\n"<<state<<std::endl;
+//	std::cout << "Created random state:\n"<<state<<std::endl;
 	return state;
 }
 

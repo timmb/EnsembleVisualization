@@ -26,6 +26,8 @@
 		2299AE701795715600464BBA /* json_valueiterator.inl in Resources */ = {isa = PBXBuildFile; fileRef = 2299AE691795715600464BBA /* json_valueiterator.inl */; };
 		2299AE711795715600464BBA /* json_writer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2299AE6A1795715600464BBA /* json_writer.cpp */; };
 		2299AE721795715600464BBA /* sconscript in Resources */ = {isa = PBXBuildFile; fileRef = 2299AE6B1795715600464BBA /* sconscript */; };
+		2299AE7517959B7F00464BBA /* particles.vert in Sources */ = {isa = PBXBuildFile; fileRef = 2299AE7417959B7F00464BBA /* particles.vert */; };
+		2299AE7717959B9E00464BBA /* particles.frag in Sources */ = {isa = PBXBuildFile; fileRef = 2299AE7617959B9E00464BBA /* particles.frag */; };
 		2B2B3ED188214264A3C9D4D3 /* OscMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C2C5DC04FD8644B9B100EB41 /* OscMessage.cpp */; };
 		2E17B0D27D9F44E89F34AB07 /* UdpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 572D797713174CF48B6208D3 /* UdpSocket.cpp */; };
 		3DA96B0955044780A3D04076 /* OscSender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B3B923FA36E145878DAA2861 /* OscSender.cpp */; };
@@ -78,6 +80,8 @@
 		2299AE691795715600464BBA /* json_valueiterator.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = json_valueiterator.inl; sourceTree = "<group>"; };
 		2299AE6A1795715600464BBA /* json_writer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = json_writer.cpp; sourceTree = "<group>"; };
 		2299AE6B1795715600464BBA /* sconscript */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = sconscript; sourceTree = "<group>"; };
+		2299AE7417959B7F00464BBA /* particles.vert */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; name = particles.vert; path = ../assets/particles.vert; sourceTree = "<group>"; };
+		2299AE7617959B9E00464BBA /* particles.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; name = particles.frag; path = ../assets/particles.frag; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		2A166A8E90424364A230EEA6 /* Resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
@@ -227,9 +231,19 @@
 			path = ../../src/lib_json;
 			sourceTree = "<group>";
 		};
+		2299AE7317959B6800464BBA /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				2299AE7417959B7F00464BBA /* particles.vert */,
+				2299AE7617959B9E00464BBA /* particles.frag */,
+			);
+			name = Shaders;
+			sourceTree = "<group>";
+		};
 		29B97314FDCFA39411CA2CEA /* Viz */ = {
 			isa = PBXGroup;
 			children = (
+				2299AE7317959B6800464BBA /* Shaders */,
 				01B97315FEAEA392516A2CEA /* Blocks */,
 				29B97315FDCFA39411CA2CEA /* Headers */,
 				080E96DDFE201D6D7F000001 /* Source */,
@@ -420,6 +434,8 @@
 				2299AE6E1795715600464BBA /* json_reader.cpp in Sources */,
 				2299AE6F1795715600464BBA /* json_value.cpp in Sources */,
 				2299AE711795715600464BBA /* json_writer.cpp in Sources */,
+				2299AE7517959B7F00464BBA /* particles.vert in Sources */,
+				2299AE7717959B9E00464BBA /* particles.frag in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -132,10 +132,12 @@ void VizApp::keyDown(ci::app::KeyEvent event)
 		mEditor.save();
 	else if (key=='l')
 		mEditor.load();
-	if (key==' ')
+	else if (key==' ')
 		mOscReceiver.toggleDebugMode();
-	if (key=='p')
+	else if (key=='p')
 		std::cout << "Renderer state:\n"<<mRenderer->state()<<endl;
+	else if (key=='a')
+		mRenderer->loadShader();
 	mEditor.keyPressed(event);
 
 }

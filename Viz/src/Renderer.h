@@ -12,6 +12,7 @@
 #include "Common.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/Perlin.h"
+#include "cinder/gl/GlslProg.h"
 
 class Renderer
 {
@@ -30,6 +31,8 @@ public:
 	
 	void setEnableDrawConnectionsDebug(bool enabled);
 	bool isDrawConnectionsDebugEnabled() const { return mEnableDrawConnectionsDebug; }
+	
+	void loadShader();
 
 private:
 	void drawQuad(ci::Vec2f const& pos, ci::Vec2f const& size);
@@ -40,6 +43,8 @@ private:
 	bool mEnableDrawConnectionsDebug;
 	State mState;
 	ci::gl::TextureRef mParticleTex;
+	
+	ci::gl::GlslProgRef mShader;
 	
 	/// just control points
 	std::map<int,std::map<int,std::vector<ci::Vec2f> > > mControlPoints;
