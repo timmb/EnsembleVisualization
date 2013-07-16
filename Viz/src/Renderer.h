@@ -35,6 +35,7 @@ public:
 	void loadShader();
 
 private:
+	void render(std::vector<ci::Vec4f> const& points);
 	void drawQuad(ci::Vec2f const& pos, ci::Vec2f const& size);
 	void drawConnectionsDebug();
 //	ci::Vec2f interp(ci::Vec2f const& orig, ci::Vec2f const& dest, float t);

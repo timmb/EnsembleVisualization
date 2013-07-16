@@ -41,6 +41,7 @@ private:
 	/// being currently edited - set to -1 for none
 	int mCurrentOrig;
 	int mCurrentDest;
+	bool mPrintFrameRate;
 };
 
 VizApp::VizApp()
@@ -53,6 +54,7 @@ VizApp::VizApp()
 , mInstrumentVisibility(NUM_INSTRUMENTS, true)
 , mCurrentOrig(-1)
 , mCurrentDest(-1)
+, mPrintFrameRate(false)
 {
 }
 
@@ -138,6 +140,8 @@ void VizApp::keyDown(ci::app::KeyEvent event)
 		std::cout << "Renderer state:\n"<<mRenderer->state()<<endl;
 	else if (key=='a')
 		mRenderer->loadShader();
+	else if (key=='f')
+		mPrintFrameRate = !mPrintFrameRate;
 	mEditor.keyPressed(event);
 
 }
@@ -179,6 +183,10 @@ void VizApp::update()
 			<< mOscReceiver.state() << endl;
 		}
 		cout << 1.f/dt << endl;
+	}
+	if (mPrintFrameRate)
+	{
+		cout << "dt: " <<dt << "\nfps: " << 1.f/dt << endl;
 	}
 }
 

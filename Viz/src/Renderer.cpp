@@ -73,35 +73,14 @@ Renderer::~Renderer()
 
 void Renderer::draw(float elapsedTime, float dt)
 {
-	glClearColor(0,0,0,0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// normalized coordinates: 2x2 square centred at origin
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
 	
+	float t= app::getElapsedSeconds();
 	
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, mParticleTex->getId());
-	if (mShaderLoaded)
-	{
-		mShader->bind();
-		mShader->uniform("Tex", (int) mParticleTex->getId());
-	}
-
-	
-//	glMatrixMode(GL_TEXTURE);
-//	// \TODO: wtf is this push for? it's unmatched?
-//	glPushMatrix();
-//	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
 
 	int N = 6000;
-//	N = 100;
+	// w is the size, z is the id
+	vector<Vec4f> points;
+	points.reserve(N);
 	map<int,int> pCount;
 	map<int,int> qCount;
 	for (int i=0; i<N; ++i)
@@ -151,17 +130,53 @@ void Renderer::draw(float elapsedTime, float dt)
 		gl::color(ColorAf(1,1,1,1));
 //		mParticleTex->bind();
 //		size = 0.1;
-		gl::drawSolidRect(Rectf(point-Vec2f(size, size), point+Vec2f(size, size)));
+		// x, y, id, size
+		points.push_back(Vec4f(point.x, point.y, points.size(), size));
+//		gl::drawSolidRect(Rectf(point-Vec2f(size, size), point+Vec2f(size, size)));
 
+	}
+	
+	float tt = app::getElapsedSeconds() - t;
+	cout << tt << endl;
+	render(points);
+		
+	if (mEnableDrawConnectionsDebug)
+		drawConnectionsDebug();
+}
+
+void Renderer::render(std::vector<ci::Vec4f> const& points)
+{
+	glClearColor(0,0,0,0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// normalized coordinates: 2x2 square centred at origin
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, mParticleTex->getId());
+	if (mShaderLoaded)
+	{
+		mShader->bind();
+		mShader->uniform("Tex", 0);
+	}
+	glMatrixMode(GL_MODELVIEW);
+	glEnable(GL_POINT_SPRITE);
+	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+	{
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(4, GL_FLOAT, 0, points.data());
+		glDrawArrays(GL_POINTS, 0, points.size());
+		glDisableClientState(GL_VERTEX_ARRAY);
 	}
 	if (mShaderLoaded)
 	{
 		mShader->unbind();
 	}
 	glBindTexture(GL_TEXTURE_2D, NULL);
-	
-	if (mEnableDrawConnectionsDebug)
-		drawConnectionsDebug();
 }
 
 void Renderer::setControlPoints(ControlPointMap const& points)
