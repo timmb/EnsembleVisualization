@@ -12,6 +12,7 @@
 #include "cinder/Surface.h"
 #include "cinder/Rand.h"
 #include "cinder/DataSource.h"
+#include "cinder/Channel.h"
 
 using namespace ci;
 using namespace std;
@@ -29,6 +30,8 @@ State Renderer::state() const
 Renderer::Renderer()
 : mEnableDrawConnectionsDebug(false)
 , mShaderLoaded(false)
+, mNumParticles(6000)
+, mNumRandoms(10)
 {
 	Surface blob = Surface(loadImage(app::getAssetPath("blob.png")));
 	mParticleTex = gl::Texture::create(blob);
@@ -44,6 +47,22 @@ Renderer::Renderer()
 	updateCalculatedControlPoints();
 	
 	loadShader();
+	
+	Channel32f randomChan(mNumRandoms, mNumParticles);
+	{
+		Rand random;
+		mRandoms = vector<vector<float> >(mNumParticles, vector<float>(mNumRandoms));
+		for (int i=0; i<mNumParticles; i++)
+		{
+			for (int j=0; j<mNumRandoms; j++)
+			{
+				float r =random.nextFloat();
+				mRandoms.at(i).at(j) = r;
+				*randomChan.getData(j, i) = r;
+			}
+		}
+	}
+	mRandomTex = gl::Texture::create(randomChan);
 }
 
 void Renderer::loadShader()
@@ -71,31 +90,45 @@ Renderer::~Renderer()
 	
 }
 
+vector<vector<float> > makeRandoms(int rows, int cols)
+{
+	Rand random;
+	vector<vector<float> > v = vector<vector<float> >(rows, vector<float>(cols));
+	for (int i=0; i<rows; i++)
+	{
+		for (int j=0; j<cols; j++)
+		{
+			v.at(i).at(j) = random.nextFloat();
+		}
+	}
+	return v;
+}
+
+
 void Renderer::draw(float elapsedTime, float dt)
 {
 	
-	float t= app::getElapsedSeconds();
-	
+	double tt = 0;
 
-	int N = 6000;
+	int N = mNumParticles;
 	// w is the size, z is the id
 	vector<Vec4f> points;
 	points.reserve(N);
 	map<int,int> pCount;
 	map<int,int> qCount;
+	double time= app::getElapsedSeconds(); //----
 	for (int i=0; i<N; ++i)
 	{
-//		if (i!=76)
-//			continue;
+		int randomCount = 0;
 		int p = i%NUM_INSTRUMENTS;
 		int q = (i/NUM_INSTRUMENTS)%NUM_INSTRUMENTS; // dest
 		if (p<=q)
 			continue;
-		Rand random;
-		random.seed(i*12421232);
+//		Rand random;
+//		random.seed(i*12421232);
 //		ofSeedRandom(i*12421232);
-		float period = random.nextFloat(50.)+10;
-		float phase = random.nextFloat(1.)*period;
+		float period = mRandoms[i][randomCount++]*50.+10;
+		float phase = mRandoms[i][randomCount++]*period;
 		float t = fmod((elapsedTime+phase)/period, 1.f);
 		t *= min(1.f, t+0.2f);
 //		Vec2f const& orig = mState.instruments.at(p).pos;
@@ -112,22 +145,22 @@ void Renderer::draw(float elapsedTime, float dt)
 //			continue;
 		Vec2f point;
 		point = interpHermite(p, q, t);
-		random.seed((NUM_INSTRUMENTS*p + q)*123232);
-		float noise = mPerlin.noise(point.x, point.y, elapsedTime*(random.nextFloat(0.1,0.7))*.4);
-		float noise2 = mPerlin.noise(point.x, point.y, elapsedTime*(random.nextFloat(0.1, 0.7)))*(sin(elapsedTime)+0.5f);
+//		random.seed((NUM_INSTRUMENTS*p + q)*123232);
+		float noise = mPerlin.noise(point.x, point.y, elapsedTime*(mRandoms[i][randomCount++]*.6+.1)*.4);
+		float noise2 = mPerlin.noise(point.x, point.y, elapsedTime*(mRandoms[i][randomCount++]*.6+.1))*(sin(elapsedTime)+0.5f);
 		float noise3 = mPerlin.noise(point.x, point.y, elapsedTime*0.007);
 		noise *= noise*noise;
-		random.seed(i*124212);
-		float brightness = sq(random.nextFloat(1)*0.63) * (0.3+0.7*amount);
-		float scaleFactor = 1.+2*cos(random.nextFloat(-0.5, 0.5)) * 0.7;
+//		random.seed(i*124212);
+		float brightness = sq(mRandoms[i][randomCount++]*0.63) * (0.3+0.7*amount);
+		float scaleFactor = 1.+2*cos(mRandoms[i][randomCount++]-.5) * 0.7;
 		float size = 0.012f *scaleFactor * amount;
 		point += Vec2f(cos(2*PI*noise+noise3), sin(2*PI*noise+noise3)) * (0.015+(noise2*0.02-0.05) + 0.03*noise3);
 		float redness = 0.f;
-		if (random.nextFloat(1)>0.94)
-			redness = random.nextFloat(0.3, 0.7);
-		glColor4f(0.94,1-redness*redness,1-redness, brightness);
+		if (mRandoms[i][randomCount++]>0.94)
+			redness = mRandoms[i][randomCount++]*.4+.3;
+//		glColor4f(0.94,1-redness*redness,1-redness, brightness);
 //		gl::draw(mParticleTex, Rectf(point, Vec2f(size, size)));
-		gl::color(ColorAf(1,1,1,1));
+//		gl::color(ColorAf(1,1,1,1));
 //		mParticleTex->bind();
 //		size = 0.1;
 		// x, y, id, size
@@ -135,9 +168,9 @@ void Renderer::draw(float elapsedTime, float dt)
 //		gl::drawSolidRect(Rectf(point-Vec2f(size, size), point+Vec2f(size, size)));
 
 	}
-	
-	float tt = app::getElapsedSeconds() - t;
+	tt += app::getElapsedSeconds() - time; // ----
 	cout << tt << endl;
+	
 	render(points);
 		
 	if (mEnableDrawConnectionsDebug)
@@ -157,11 +190,15 @@ void Renderer::render(std::vector<ci::Vec4f> const& points)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	
 	glEnable(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, mRandomTex->getId());
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, mParticleTex->getId());
 	if (mShaderLoaded)
 	{
 		mShader->bind();
 		mShader->uniform("Tex", 0);
+		mShader->uniform("Rand", 1);
 	}
 	glMatrixMode(GL_MODELVIEW);
 	glEnable(GL_POINT_SPRITE);
@@ -176,6 +213,9 @@ void Renderer::render(std::vector<ci::Vec4f> const& points)
 	{
 		mShader->unbind();
 	}
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, NULL);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, NULL);
 }
 

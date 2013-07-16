@@ -1,6 +1,7 @@
 #version 120
 
 //varying vec2 Uv;
+uniform sampler2D Rand;
 
 void main()
 {

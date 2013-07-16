@@ -44,6 +44,12 @@ private:
 	bool mEnableDrawConnectionsDebug;
 	State mState;
 	ci::gl::TextureRef mParticleTex;
+	ci::gl::TextureRef mRandomTex;
+	std::vector<std::vector<float> > mRandoms;
+	int mNumParticles;
+	int mNumRandoms; // per particle
+//	int mRandomsRows;
+//	int mRandomsCols;
 	
 	ci::gl::GlslProgRef mShader;
 	bool mShaderLoaded;
