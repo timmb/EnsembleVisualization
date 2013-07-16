@@ -45,6 +45,7 @@ private:
 	ci::gl::TextureRef mParticleTex;
 	
 	ci::gl::GlslProgRef mShader;
+	bool mShaderLoaded;
 	
 	/// just control points
 	std::map<int,std::map<int,std::vector<ci::Vec2f> > > mControlPoints;

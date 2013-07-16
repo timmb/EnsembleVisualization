@@ -28,6 +28,7 @@ State Renderer::state() const
 
 Renderer::Renderer()
 : mEnableDrawConnectionsDebug(false)
+, mShaderLoaded(false)
 {
 	Surface blob = Surface(loadImage(app::getAssetPath("blob.png")));
 	mParticleTex = gl::Texture::create(blob);
@@ -47,9 +48,12 @@ Renderer::Renderer()
 
 void Renderer::loadShader()
 {
+	mShaderLoaded = false;
 	try
 	{
-	mShader = gl::GlslProg::create(DataSourcePath::create(app::getAssetPath("particles.vert")), DataSourcePath::create(app::getAssetPath("particles.frag")));
+		mShader = gl::GlslProg::create(DataSourcePath::create(app::getAssetPath("particles.vert")), DataSourcePath::create(app::getAssetPath("particles.frag")));
+		mShaderLoaded = true;
+		cout << "\n*\nShader compiled successfully" << endl;
 	}
 	catch (gl::GlslProgCompileExc e)
 	{
@@ -83,7 +87,11 @@ void Renderer::draw(float elapsedTime, float dt)
 	
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, mParticleTex->getId());
-	mShader->bind();
+	if (mShaderLoaded)
+	{
+		mShader->bind();
+		mShader->uniform("Tex", (int) mParticleTex->getId());
+	}
 
 	
 //	glMatrixMode(GL_TEXTURE);
@@ -146,7 +154,10 @@ void Renderer::draw(float elapsedTime, float dt)
 		gl::drawSolidRect(Rectf(point-Vec2f(size, size), point+Vec2f(size, size)));
 
 	}
-	mShader->unbind();
+	if (mShaderLoaded)
+	{
+		mShader->unbind();
+	}
 	glBindTexture(GL_TEXTURE_2D, NULL);
 	
 	if (mEnableDrawConnectionsDebug)
