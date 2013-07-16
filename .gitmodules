@@ -1,0 +1,3 @@
+[submodule "Cinder-git"]
+	path = Cinder-git
+	url = git@github.com:cinder/Cinder.git
