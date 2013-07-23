@@ -30,7 +30,7 @@ State Renderer::state() const
 Renderer::Renderer()
 : mEnableDrawConnectionsDebug(false)
 , mShaderLoaded(false)
-, mNumParticles(6000)
+, mNumParticles(30000)
 , mNumRandoms(10)
 {
 	Surface blob = Surface(loadImage(app::getAssetPath("blob.png")));
@@ -63,6 +63,8 @@ Renderer::Renderer()
 		}
 	}
 	mRandomTex = gl::Texture::create(randomChan);
+	mRandomTex->setMagFilter(GL_NEAREST);
+	mRandomTex->setMinFilter(GL_NEAREST);
 }
 
 void Renderer::loadShader()
