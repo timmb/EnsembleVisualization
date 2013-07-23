@@ -28,5 +28,5 @@ void main()
 	gl_Position.z = 0;
 //	Uv = gl_MultiTexCoord0.st;
 	gl_PointSize = gl_Vertex.w*400+6;
-	brightness = rand();//sq(rand()*0.63) * (0.3+0.7*amount);
+	brightness = rand() ;//sq(rand()*0.63) * (0.3+0.7*amount);
 }
