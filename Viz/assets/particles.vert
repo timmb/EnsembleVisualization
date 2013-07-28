@@ -2,6 +2,7 @@
 
 //varying vec2 Uv;
 uniform sampler2D Rand;
+uniform sampler2D ControlPoints;
 varying float brightness;
 uniform int numRandomsPerParticle;
 uniform float time;

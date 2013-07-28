@@ -25,7 +25,9 @@ T sq(T const& x)
 }
 
 const static double PI = 3.14159265359;
-
+/// maximum number of control points per particle
+/// This value is used directly in the shader as well
+const static int MAX_CONTROL_POINTS = 50;
 
 //inline
 //ofVec2f toNorm(ofVec2f const& v)

@@ -317,10 +317,17 @@ void ControlPointEditor::mousePressed(ci::Vec2f const& pos, int button)
 		auto& points1 = mControlPoints.at(inst1).at(inst0);
 		if (button==LEFT)
 		{
-			points0.push_back(pos);
-			// higher valued instrument we insert the control points
-			// in reverse order
-			points1.insert(points1.begin(), pos);
+			if (points0.size() < MAX_CONTROL_POINTS)
+			{
+				points0.push_back(pos);
+				// higher valued instrument we insert the control points
+				// in reverse order
+				points1.insert(points1.begin(), pos);
+			}
+			else
+			{
+				cout << "Cannot add control point as the maximum number ("<<MAX_CONTROL_POINTS<<") has been reached."<<endl;
+			}
 		}
 		else if (button==RIGHT)
 		{

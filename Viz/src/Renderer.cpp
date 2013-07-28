@@ -41,6 +41,30 @@ Renderer::Renderer()
 //	mParticleTex.allocate(blob.width, blob.height, GL_RGBA8);
 //	mParticleTex.loadData(blob);
 
+	// iniitialize mControlPointsTex
+	// extra 2 for start and end. extra 1 to provide number
+	// of control points as first element
+	int cpTexHeight = MAX_CONTROL_POINTS + 2 + 1;
+	int cpTexWidth = NUM_INSTRUMENTS * NUM_INSTRUMENTS;
+	Surface32f cpInit = Surface32f(cpTexWidth, cpTexHeight, false, SurfaceChannelOrder::RGB);
+	for (int i=0; i<cpInit.getWidth(); i++)
+		for (int j=0; j<cpInit.getHeight(); j++)
+		{
+			*cpInit.getDataRed(Vec2i(i, j)) = 0.f;
+			*cpInit.getDataGreen(Vec2i(i, j)) = 0.f;
+		}
+	mControlPointsTex = gl::Texture::create(cpInit);
+	mControlPointsTex->setMagFilter(GL_NEAREST);
+	mControlPointsTex->setMinFilter(GL_NEAREST);
+	
+	
+//	int cpTexSize =cpTexWidth*cpTexHeight*2; // two channels
+//	float* initialData = new float[cpTexSize];
+//	std::fill(initialData, initialData+cpTexSize, 0.f);
+//	mControlPointsTex = gl::Texture::create(initialData, GL_RGB, cpTexWidth, cpTexHeight);
+//	delete[] initialData;
+//	initialData = NULL;
+	
 	for (int i=0; i<NUM_INSTRUMENTS; ++i)
 		for (int j=0; j<NUM_INSTRUMENTS; ++j)
 			mControlPoints[i][j] = vector<ci::Vec2f>();
@@ -82,6 +106,7 @@ Renderer::Renderer()
 	mRandomTex = gl::Texture::create(randomChan);
 	mRandomTex->setMagFilter(GL_NEAREST);
 	mRandomTex->setMinFilter(GL_NEAREST);
+	
 }
 
 void Renderer::loadShader()
@@ -106,7 +131,6 @@ void Renderer::setEnableDrawConnectionsDebug(bool enabled)
 
 Renderer::~Renderer()
 {
-	
 }
 
 vector<vector<float> > makeRandoms(int rows, int cols)
@@ -217,11 +241,14 @@ void Renderer::render(float elapsedTime, std::vector<ci::Vec4f> const& points)
 	glBindTexture(GL_TEXTURE_2D, mParticleTex->getId());
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, mRandomTex->getId());
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, mControlPointsTex->getId());
 	if (mShaderLoaded)
 	{
 		mShader->bind();
 		mShader->uniform("Tex", 0);
 		mShader->uniform("Rand", 1);
+		mShader->uniform("ControlPoints", 2);
 		mShader->uniform("numRandomsPerParticle", mNumRandoms);
 		mShader->uniform("time", elapsedTime);
 	}
@@ -238,6 +265,8 @@ void Renderer::render(float elapsedTime, std::vector<ci::Vec4f> const& points)
 	{
 		mShader->unbind();
 	}
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, NULL);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, NULL);
 	glActiveTexture(GL_TEXTURE0);
@@ -436,17 +465,39 @@ Vec2f Renderer::interpHermite(int inst0, int inst1, float t) const
 
 void Renderer::updateCalculatedControlPoints()
 {
+	// put onto texture for shader
+	Surface32f surface(mControlPointsTex->getWidth(), mControlPointsTex->getHeight(), false, SurfaceChannelOrder::RGB);
+
 	for (int i=0; i<NUM_INSTRUMENTS; ++i)
+	{
 		for (int j=0; j<NUM_INSTRUMENTS; ++j)
 		{
-			auto const& points = mControlPoints[i][j];
+			auto& points = mControlPoints[i][j];
+			assert(points.size() < MAX_CONTROL_POINTS);
+			while (points.size() >= MAX_CONTROL_POINTS)
+			{
+				points.pop_back();
+			}
 			mCalculatedControlPoints[i][j] = vector<Vec2f>(points.size()+2);
 			auto& ps = mCalculatedControlPoints[i][j];
 			ps[0] = mState.instruments.at(i).pos;
 			ps[ps.size()-1] = mState.instruments.at(j).pos;
 			copy(points.begin(), points.end(), ps.begin()+1);
-//			cout << "Control points for "<<i<<" to "<<j<<": "<<points <<endl;
-//			cout << "Calculated control points for "<<i<<" to "<<j<<": "<<ps <<endl;
+			
+			// for surface
+			int x = i*NUM_INSTRUMENTS + j;
+			assert(x < surface.getWidth());
+			*surface.getData(Vec2i(x, 0)) = ps.size();
+			for (int k=0; k<ps.size(); k++)
+			{
+				assert(k < surface.getHeight());
+				*surface.getDataRed(Vec2i(x, k+1)) = ps.at(k).x;
+				*surface.getDataGreen(Vec2i(x, k+1)) = ps.at(k).y;
+			}
 		}
+	}
+	
+	// copy surface to texture
+	mControlPointsTex->update(surface);
 }
 

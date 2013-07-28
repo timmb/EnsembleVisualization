@@ -45,6 +45,9 @@ private:
 	State mState;
 	ci::gl::TextureRef mParticleTex;
 	ci::gl::TextureRef mRandomTex;
+	/// point n for inst i to inst j is (i*NUM_INSTRUMENTS+j, n+1)
+	/// (i*NUM_INSTRUMENTS+j, 0) gives number of control points
+	ci::gl::TextureRef mControlPointsTex;
 	std::vector<std::vector<float> > mRandoms;
 	int mNumParticles;
 	int mNumRandoms; // per particle
