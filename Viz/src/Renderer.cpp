@@ -30,7 +30,7 @@ State Renderer::state() const
 Renderer::Renderer()
 : mEnableDrawConnectionsDebug(false)
 , mShaderLoaded(false)
-, mNumParticles(80000)
+, mNumParticles(30000)
 , mNumRandoms(10)
 {
 	Surface blob = Surface(loadImage(app::getAssetPath("blob.png")));
@@ -165,7 +165,7 @@ void Renderer::draw(float elapsedTime, float dt)
 		int randomCount = 0;
 		int p = i%NUM_INSTRUMENTS;
 		int q = (i/NUM_INSTRUMENTS)%NUM_INSTRUMENTS; // dest
-		if (p<=q)
+		if (p==q)
 			continue;
 //		Rand random;
 //		random.seed(i*12421232);
@@ -207,7 +207,8 @@ void Renderer::draw(float elapsedTime, float dt)
 //		mParticleTex->bind();
 //		size = 0.1;
 		// x, y, id, size
-		points.push_back(Vec4f(point.x, point.y, points.size(), amount));
+//		points.push_back(Vec4f(point.x, point.y, points.size(), amount));
+		points.push_back(Vec4f(p, q, points.size(), amount));
 //		gl::drawSolidRect(Rectf(point-Vec2f(size, size), point+Vec2f(size, size)));
 
 	}
@@ -248,7 +249,9 @@ void Renderer::render(float elapsedTime, std::vector<ci::Vec4f> const& points)
 		mShader->bind();
 		mShader->uniform("Tex", 0);
 		mShader->uniform("Rand", 1);
+		mShader->uniform("RandSize", Vec2f(mRandomTex->getSize()));
 		mShader->uniform("ControlPoints", 2);
+		mShader->uniform("ControlPointsSize", Vec2f(mControlPointsTex->getSize()));
 		mShader->uniform("numRandomsPerParticle", mNumRandoms);
 		mShader->uniform("time", elapsedTime);
 	}
@@ -271,6 +274,7 @@ void Renderer::render(float elapsedTime, std::vector<ci::Vec4f> const& points)
 	glBindTexture(GL_TEXTURE_2D, NULL);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, NULL);
+//	gl::draw(mControlPointsTex, Rectf(-1, -1, 1, 1));
 }
 
 void Renderer::setControlPoints(ControlPointMap const& points)
@@ -487,7 +491,7 @@ void Renderer::updateCalculatedControlPoints()
 			// for surface
 			int x = i*NUM_INSTRUMENTS + j;
 			assert(x < surface.getWidth());
-			*surface.getData(Vec2i(x, 0)) = ps.size();
+			*surface.getDataRed(Vec2i(x, 0)) = ps.size();
 			for (int k=0; k<ps.size(); k++)
 			{
 				assert(k < surface.getHeight());
