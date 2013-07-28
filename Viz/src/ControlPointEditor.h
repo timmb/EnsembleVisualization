@@ -31,6 +31,10 @@ public:
 	/// Pos is in normalized coordinates
 	/// button is 0 for LEFT, 2 for RIGHT
 	void mousePressed(ci::Vec2f const& pos, int button);
+	/// Pos is in normalized coordinates
+	/// button is 0 for LEFT, 2 for RIGHT
+	void mouseDragged(ci::Vec2f const& pos, int button);
+	void mouseReleased(int button);
 	
 private:
 	/// Call to update stuff when something changes
@@ -38,9 +42,22 @@ private:
 	void clearPoints();
 	
 	bool mIsInSetupMode;
+	bool mIsInWarpMode;
 	Renderer* mRenderer;
 	std::string mJsonFilename;
 	std::map<int, std::map<int, std::vector<ci::Vec2f> > > mControlPoints;
+	
+	// warp editor
+	/// the quad things get drawn to
+	tmb::Quad mWarpQuad;
+	/// the noramlized coordinate quad (-1 to +1)
+	tmb::Quad mOriginalQuad;
+	enum Corner_ { TL, TR, BR, BL };
+	typedef int Corner;
+	Corner mCurrentlyBeingDragged;
+	ci::Vec2f mDragOffset;
+	ci::Matrix44f mWarpTransform;
+	void updateWarpTransform();
 
 	std::string mStatus;
 	std::string getName(int instrumentNumber) const;

@@ -67,4 +67,14 @@ extern float my;
 namespace tmb
 {
 	void drawString(std::string const& text, ci::Vec2f const& position, bool isCentered = true, ci::ColorA const& color=ci::ColorA(1, .6, .45, 1.));
+	
+	struct Quad {
+		ci::Vec2f tl, tr, br, bl;
+		Quad(ci::Vec2f const& tl_=ci::Vec2f(), ci::Vec2f const& tr_=ci::Vec2f(), ci::Vec2f const& br_=ci::Vec2f(), ci::Vec2f const& bl_=ci::Vec2f())
+		: tl(tl_)
+		, tr(tr_)
+		, br(br_)
+		, bl(bl_)
+		{}
+	};
 }

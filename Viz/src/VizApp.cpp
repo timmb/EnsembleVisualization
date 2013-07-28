@@ -60,7 +60,7 @@ VizApp::VizApp()
 
 void VizApp::prepareSettings(Settings *settings)
 {
-	settings->setWindowSize(700, 700);
+	settings->setWindowSize(800, 800);
 }
 
 void VizApp::setup()
@@ -99,13 +99,24 @@ void VizApp::mouseMove(ci::app::MouseEvent event)
 
 void VizApp::mouseDrag(ci::app::MouseEvent event)
 {
+	using namespace ci;
+	using namespace ci::app;
 	mouseMove(event);
-
+	Vec2f pos = Vec2f(float(event.getPos().x)/getWindowWidth() * 2 - 1, float(getWindowWidth() - event.getPos().y)/getWindowHeight() * 2 - 1);
+	int button = event.isLeft()? 0
+	: event.isRight()? 2
+	: event.isMiddle()? 1
+	: -1;
+	mEditor.mouseDragged(pos, button);
 }
 
 void VizApp::mouseUp(ci::app::MouseEvent event)
 {
-	
+	int button = event.isLeft()? 0
+	: event.isRight()? 2
+	: event.isMiddle()? 1
+	: -1;
+	mEditor.mouseReleased(button);
 }
 
 void VizApp::keyDown(ci::app::KeyEvent event)

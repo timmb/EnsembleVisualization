@@ -46,12 +46,14 @@ Renderer::Renderer()
 	// of control points as first element
 	int cpTexHeight = MAX_CONTROL_POINTS + 2 + 1;
 	int cpTexWidth = NUM_INSTRUMENTS * NUM_INSTRUMENTS;
-	Surface32f cpInit = Surface32f(cpTexWidth, cpTexHeight, false, SurfaceChannelOrder::RGB);
+	Surface32f cpInit = Surface32f(cpTexWidth, cpTexHeight, true, SurfaceChannelOrder::RGBA);
 	for (int i=0; i<cpInit.getWidth(); i++)
 		for (int j=0; j<cpInit.getHeight(); j++)
 		{
 			*cpInit.getDataRed(Vec2i(i, j)) = 0.f;
 			*cpInit.getDataGreen(Vec2i(i, j)) = 0.f;
+			*cpInit.getDataBlue(Vec2i(i, j)) = 0.f;
+			*cpInit.getDataAlpha(Vec2i(i, j)) = 0.f;
 		}
 	mControlPointsTex = gl::Texture::create(cpInit);
 	mControlPointsTex->setMagFilter(GL_NEAREST);
@@ -176,7 +178,7 @@ void Renderer::draw(float elapsedTime, float dt)
 //		t *= min(1.f, t+0.2f);
 //		Vec2f const& orig = mState.instruments.at(p).pos;
 //		Vec2f const& dest = mState.instruments.at(q).pos;
-//		float amount = mState.instruments.at(p).connections.at(q);
+		float amount = mState.instruments.at(p).connections.at(q);
 		if (0)//(amount>0.3 && ofGetFrameNum()%30==0)
 		{
 			printf("Points for instrument %s and %s:\n", mState.instruments[p].name.c_str(), mState.instruments[q].name.c_str());
@@ -214,10 +216,6 @@ void Renderer::draw(float elapsedTime, float dt)
 	}
 //	tt += app::getElapsedSeconds() - time; // ----
 //	cout << tt << endl;
-	static float prevTime = 0;
-	float frameTime = elapsedTime - prevTime;
-	prevTime = elapsedTime;
-	cout << "frame: "<< frameTime << endl;
 	
 	render(elapsedTime, points);
 		
@@ -470,7 +468,7 @@ Vec2f Renderer::interpHermite(int inst0, int inst1, float t) const
 void Renderer::updateCalculatedControlPoints()
 {
 	// put onto texture for shader
-	Surface32f surface(mControlPointsTex->getWidth(), mControlPointsTex->getHeight(), false, SurfaceChannelOrder::RGB);
+	Surface32f surface(mControlPointsTex->getWidth(), mControlPointsTex->getHeight(), true, SurfaceChannelOrder::RGBA);
 
 	for (int i=0; i<NUM_INSTRUMENTS; ++i)
 	{
@@ -497,6 +495,14 @@ void Renderer::updateCalculatedControlPoints()
 				assert(k < surface.getHeight());
 				*surface.getDataRed(Vec2i(x, k+1)) = ps.at(k).x;
 				*surface.getDataGreen(Vec2i(x, k+1)) = ps.at(k).y;
+				// optimization - cache the tangents here as well
+				Vec2f tangent = Vec2f(0,0);
+				if (k+1 < ps.size())
+				{
+					tangent = ps.at(k+1) - ps.at(k);
+				}
+				*surface.getDataBlue(Vec2i(x, k+1)) = tangent.x;
+				*surface.getDataAlpha(Vec2i(x, k+1)) = tangent.y;
 			}
 		}
 	}

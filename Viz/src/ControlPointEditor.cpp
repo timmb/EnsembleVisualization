@@ -11,14 +11,21 @@
 #include "cinder/Utilities.h"
 #include <ostream>
 #include <fstream>
+#include "CinderOpenCV.h"
+#include <boost/assign.hpp>
+#include "cinder/Matrix.h"
 
 using namespace ci;
 using namespace std;
+using tmb::Quad;
 
 ControlPointEditor::ControlPointEditor()
 : mRenderer(NULL)
 , mIsInSetupMode(false)
 , mInstrumentVisibility(NUM_INSTRUMENTS, true)
+, mWarpQuad(Vec2f(-1, 1), Vec2f(1, 1), Vec2f(1, -1), Vec2f(-1, -1))
+, mIsInWarpMode(false)
+, mOriginalQuad(Vec2f(-1, 1),Vec2f(1, 1),Vec2f(1, -1),Vec2f(-1, -1))
 {
 	for (int i=0; i<NUM_INSTRUMENTS; i++)
 	{
@@ -184,6 +191,8 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 	// normalized coordinates: 2x2 square centred at origin
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	glLoadMatrixf(mWarpTransform);
+	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glDisable(GL_TEXTURE_2D);
@@ -234,6 +243,29 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 		}
 	}
 	
+	if (mIsInWarpMode)
+	{
+		gl::color(.85, .85, 1., 0.875);
+		// draw lines to help keystone
+		for (int i=0; i<10; i++)
+		{
+			float x = i/9.f;
+			gl::drawLine(Vec2f(x*2-1., -1), Vec2f(x*2.-1., +1));
+		}
+		for (int i=0; i<10; i++)
+		{
+			float y = i/9.f;
+			gl::drawLine(Vec2f(-1, y*2-1.), Vec2f(+1, y*2-1));
+		}
+		// draw corners
+		gl::color(1,0,0,0.9);
+		float radius = 0.2;
+		gl::drawSolidCircle(mOriginalQuad.tl, radius, 20);
+		gl::drawSolidCircle(mOriginalQuad.tr, radius, 20);
+		gl::drawSolidCircle(mOriginalQuad.br, radius, 20);
+		gl::drawSolidCircle(mOriginalQuad.bl, radius, 20);
+	}
+	
 	// status text
 	gl::setMatricesWindow(app::getWindowWidth(), app::getWindowHeight());
 //	ofSetupScreen();
@@ -277,18 +309,38 @@ void ControlPointEditor::keyPressed(ci::app::KeyEvent event)
 		{
 			clearPoints();
 		}
+		else if (mIsInWarpMode && event.getCode()==cinder::app::KeyEvent::KEY_BACKSPACE && ctrlPressed)
+		{
+			mWarpQuad = mOriginalQuad;
+			updateWarpTransform();
+		}
 		else if (key=='e')
 		{
 			mIsInSetupMode = !mIsInSetupMode;
-			if (!mIsInSetupMode)
+			if (mIsInSetupMode)
+			{
+				mIsInWarpMode = false;
+			}
+			else
 			{
 				editInstrument(NONE);
 				editInstrument(NONE);
 			}
+			
 		}
 		else if (key=='c')
 		{
 			mRenderer->setEnableDrawConnectionsDebug(!mRenderer->isDrawConnectionsDebugEnabled());
+		}
+		else if (key=='w')
+		{
+			mIsInWarpMode = !mIsInWarpMode;
+			if (mIsInWarpMode && mIsInSetupMode)
+			{
+				mIsInSetupMode = false;
+				editInstrument(NONE);
+				editInstrument(NONE);
+			}
 		}
 	}
 	notify();
@@ -300,6 +352,81 @@ void ControlPointEditor::clearPoints()
 		for (auto& dest: orig.second)
 			dest.second.clear();
 	cout << "All control points cleared."<<endl;
+}
+
+void ControlPointEditor::mouseDragged(ci::Vec2f const& pos, int button)
+{
+	if (mIsInWarpMode)
+	{
+		Vec2f p = pos - mDragOffset;
+		switch (mCurrentlyBeingDragged)
+		{
+			case TL:
+				mWarpQuad.tl = pos;
+				break;
+			case TR:
+				mWarpQuad.tr = pos;
+				break;
+			case BR:
+				mWarpQuad.br = pos;
+				break;
+			case BL:
+				mWarpQuad.bl = pos;
+				break;
+			default:
+				break;
+		}
+	}
+	updateWarpTransform();
+}
+
+cv::Point2f toCv(ci::Vec2f const& v)
+{
+	return cv::Point2f(v.x, v.y);
+}
+
+void ControlPointEditor::updateWarpTransform()
+{
+	mWarpTransform = Matrix44f::identity();
+	using namespace cv;
+	using cv::Point2f;
+	static vector<Point2f> orig = boost::assign::list_of
+	(Point2f(-1, 1))(Point2f(1,1))(Point2f(1,-1))(Point2f(-1,-1));
+	vector<Point2f> dest(4);
+	dest[0] = toCv(mWarpQuad.tl);
+	dest[1] = toCv(mWarpQuad.tr);
+	dest[2] = toCv(mWarpQuad.br);
+	dest[3] = toCv(mWarpQuad.bl);
+	Mat transform = cv::getPerspectiveTransform(orig, dest);
+	cout << "cv transform size " << transform.size() << endl;
+	cout << "cv transform\n" << transform << endl;
+	for (int i=0; i<3; i++)
+	{
+		for (int j=0; j<3; j++)
+		{
+			// cinder is cols then rows
+			mWarpTransform.mcols[j][i] = transform.at<double>(cv::Point(j, i));
+		}
+	}
+	cout << "orig " << orig << endl;
+	cout << "dest " << dest << endl;
+	cout << "transform matrix\n" << mWarpTransform << endl;
+	cout << "transformed orig:\n"
+	for (int i=0; i<4; i++)
+	{
+		cv::warpPersective
+		cout << orig.at(i) << " -> " <<
+	}
+}
+
+void ControlPointEditor::mouseReleased(int button)
+{
+	const int LEFT = 0;
+	if (button==LEFT)
+	{
+		mCurrentlyBeingDragged = NONE;
+		mDragOffset = Vec2f(0,0);
+	}
 }
 
 void ControlPointEditor::mousePressed(ci::Vec2f const& pos, int button)
@@ -337,18 +464,49 @@ void ControlPointEditor::mousePressed(ci::Vec2f const& pos, int button)
 				points1.erase(points1.begin());
 		}
 	}
+	else if (mIsInWarpMode && button==LEFT)
+	{
+		const float radius = 0.2;
+		if (pos.distance(mWarpQuad.tl) < radius)
+		{
+			mCurrentlyBeingDragged = TL;
+			mDragOffset = pos - mWarpQuad.tl;
+		}
+		else if (pos.distance(mWarpQuad.tr) < radius)
+		{
+			mCurrentlyBeingDragged = TR;
+			mDragOffset = pos - mWarpQuad.tr;
+		}
+		else if (pos.distance(mWarpQuad.bl) < radius)
+		{
+			mCurrentlyBeingDragged = BL;
+			mDragOffset = pos - mWarpQuad.bl;
+		}
+		else if (pos.distance(mWarpQuad.br) < radius)
+		{
+			mCurrentlyBeingDragged = BR;
+			mDragOffset = pos - mWarpQuad.br;
+		}
+		else
+		{
+			mCurrentlyBeingDragged = NONE;
+			mDragOffset = Vec2f(0,0);
+		}
+	}
 	notify();
 }
 
 void ControlPointEditor::notify()
 {
 	mRenderer->setControlPoints(mControlPoints);
-	mStatus = "S to save, L to load, C to draw connections, P to print state, R to randomize state,\nM for maximal state, space to toggle debug interface, E to toggle control point editor";
+	mStatus = "S to save, L to load, C to draw connections, P to print state, R to randomize state,\nM for maximal state, space to toggle debug interface, E to toggle control point editor\nW to toggle warp editing mode";
 	if (mIsInSetupMode)
 		mStatus += "\nEditing: "+toString(mEditingInstruments[0])+" "
 		+ getName(mEditingInstruments[0])+" and "+toString(mEditingInstruments[1])+" "
 		+ getName(mEditingInstruments[1])+"\n<num> to select instruments, control <num> to change visibility"
 		+ "\n(use '-' for no/all instrument(s)), d to deselect, Ctrl Backspace to clear all control points\nStart points at low-numbered instrument";
+	if (mIsInWarpMode)
+		mStatus += "\nWarp editor: Ctrl Backspace to reset the warp quad Drag the corners to warp the screen.";
 }
 
 string ControlPointEditor::getName(int instrumentNumber) const

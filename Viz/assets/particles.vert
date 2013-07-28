@@ -165,17 +165,17 @@ vec2 hermiteSpline(int inst0, int inst1, float t)
 	
 	// +1's here are because index 0 is used to store number of
 	// values
-	vec2 segmentPoint = texture2D(ControlPoints, vec2(tex_x, (segment+1)/ControlPointsSize.y)).xy;
-	vec2 segmentPointPlus1 = texture2D(ControlPoints, vec2(tex_x, (segment+1+1)/ControlPointsSize.y)).xy;
+	vec4 segmentPoint = texture2D(ControlPoints, vec2(tex_x, (segment+1)/ControlPointsSize.y));
+	vec4 segmentPointPlus1 = texture2D(ControlPoints, vec2(tex_x, (segment+1+1)/ControlPointsSize.y));
 	// last segment is a special case
-	// ...
-	vec2 tangent0 = segmentPointPlus1 - segmentPoint;
-	vec2 segmentPointPlus2 = texture2D(ControlPoints, vec2(tex_x, (segment+2+1)/ControlPointsSize.y)).xy;
-	vec2 tangent1 = vec2(0);
-	if (segment+2<numPoints)
-	{
-		tangent1 = segmentPointPlus2 - segmentPointPlus1;
-	}
+	// (cached as optimization)
+//	vec2 tangent0 = segmentPointPlus1 - segmentPoint;
+//	vec2 segmentPointPlus2 = texture2D(ControlPoints, vec2(tex_x, (segment+2+1)/ControlPointsSize.y)).xy;
+//	vec2 tangent1 = vec2(0);
+//	if (segment+2<numPoints)
+//	{
+//		tangent1 = segmentPointPlus2 - segmentPointPlus1;
+//	}
 
 	// temp
 //	vec2 r = segmentPointPlus1;
@@ -187,17 +187,17 @@ vec2 hermiteSpline(int inst0, int inst1, float t)
 //	return hermiteSpline(segmentPoint, tangent0, segmentPointPlus1, tangent1, p);
 	
 	float s = p;
-	vec2 point0 = segmentPoint;
-	vec2 point1 = segmentPointPlus1;
+//	vec2 point0 = segmentPoint;
+//	vec2 point1 = segmentPointPlus1;
 	
 	float h1 =  2*s*s*s - 3*s*s + 1;          // calculate basis function 1
 	float h2 = -2*s*s*s + 3*s*s;              // calculate basis function 2
 	float h3 =   s*s*s  - 2*s*s + s;         // calculate basis function 3
 	float h4 =   s*s*s  -  s*s;              // calculate basis function 4
-	vec2 v = h1*point0                    // multiply and sum all funtions
-	+ h2*point1                    // together to build the interpolated
-	+ h3*tangent0                    // point along the curve.
-	+ h4*tangent1;
+	vec2 v = h1*segmentPoint.xy                    // multiply and sum all funtions
+	+ h2*segmentPointPlus1.xy                    // together to build the interpolated
+	+ h3*segmentPoint.zw                    // point along the curve.
+		+ h4*segmentPointPlus1.zw;
 	//	col = vec4(1,p.x*.2,0,1);
 	return v;
 
@@ -225,7 +225,7 @@ void main()
 
 	inst0 = int(mod(id,NUM_INSTRUMENTS));
 	inst1 = int(mod(floor(id/NUM_INSTRUMENTS), NUM_INSTRUMENTS));
-	if (inst0 == inst1)
+	if (inst0 == inst1)// || inst0!=3 || inst1!=4)
 	{
 		// discard
 		gl_Position = vec4(0, 0, -300, 1);
@@ -240,7 +240,7 @@ void main()
 	amount = gl_Vertex.w;
 //	gl_Position = vec4(gl_Vertex.xy, 0, 1);
 //	gl_Position = getPosition();
-	gl_Position += calculatePositionNoise();
+//	gl_Position += calculatePositionNoise();
 	gl_Position.z = 0;
 	//	Uv = gl_MultiTexCoord0.st;
 	gl_PointSize = 20.12*(1+2*cos(rand())-0.5)*0.7*amount + 6;

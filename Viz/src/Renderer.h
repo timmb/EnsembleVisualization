@@ -47,6 +47,8 @@ private:
 	ci::gl::TextureRef mRandomTex;
 	/// point n for inst i to inst j is (i*NUM_INSTRUMENTS+j, n+1)
 	/// (i*NUM_INSTRUMENTS+j, 0) gives number of control points
+	/// red and green are x,y of control point
+	/// blue and alpha are x,y of tangent at that point
 	ci::gl::TextureRef mControlPointsTex;
 	std::vector<std::vector<float> > mRandoms;
 	int mNumParticles;
