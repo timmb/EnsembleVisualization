@@ -151,6 +151,7 @@ vec2 hermiteSpline(vec2 point0, vec2 tangent0, vec2 point1, vec2 tangent1, float
 	h2*point1 +                    // together to build the interpolated
 	h3*tangent0 +                    // point along the curve.
 	h4*tangent1;
+//	col = vec4(1,p.x*.2,0,1);
 	return p;
 }
 
@@ -162,24 +163,44 @@ vec2 hermiteSpline(int inst0, int inst1, float t)
 	float segment = min(numSegments-1, int(t*numSegments));
 	float p = t*numSegments - segment;
 	
+	// +1's here are because index 0 is used to store number of
+	// values
 	vec2 segmentPoint = texture2D(ControlPoints, vec2(tex_x, segment+1)/ControlPointsSize).xy;
 	vec2 segmentPointPlus1 = texture2D(ControlPoints, vec2(tex_x, segment+1+1)/ControlPointsSize).xy;
 	// last segment is a special case
 	// ...
-	// +1's here are because index 0 is used to store number of
-	// values
 	vec2 tangent0 = segmentPointPlus1 - segmentPoint;
 	vec2 tangent1 = vec2(0);
-	if (segment+2<=numPoints)
+	if (segment+2<numPoints)
 	{
-		tangent1 = segmentPointPlus1 - segmentPoint;
+		vec2 segmentPointPlus2 = texture2D(ControlPoints, vec2(tex_x, segment+2+1)/ControlPointsSize).xy;
+		tangent1 = segmentPointPlus2 - segmentPointPlus1;
 	}
+
 	// temp
 //	vec2 r = segmentPointPlus1;
 //	r.x = numPoints / 10. * 2 - 1;
 //	return r;
 //	return vec2(0, texture2D(ControlPoints, vec2(1, 0)).y);
-	return hermiteSpline(segmentPoint, tangent0, segmentPointPlus1, tangent1, p);
+//	return segmentPoint;
+//	return mix(segmentPoint, segmentPointPlus1, p);
+//	return hermiteSpline(segmentPoint, tangent0, segmentPointPlus1, tangent1, p);
+	
+	float s = p;
+	vec2 point0 = segmentPoint;
+	vec2 point1 = segmentPointPlus1;
+	
+	float h1 =  2*s*s*s - 3*s*s + 1;          // calculate basis function 1
+	float h2 = -2*s*s*s + 3*s*s;              // calculate basis function 2
+	float h3 =   s*s*s  - 2*s*s + s;         // calculate basis function 3
+	float h4 =   s*s*s  -  s*s;              // calculate basis function 4
+	vec2 v = h1*point0                    // multiply and sum all funtions
+	+ h2*point1                    // together to build the interpolated
+	+ h3*tangent0                    // point along the curve.
+	+ h4*tangent1;
+	//	col = vec4(1,p.x*.2,0,1);
+	return v;
+
 	
 }
 
@@ -204,7 +225,7 @@ void main()
 
 	inst0 = int(mod(id,NUM_INSTRUMENTS));
 	inst1 = int(mod(floor(id/NUM_INSTRUMENTS), NUM_INSTRUMENTS));
-	if (inst0 == inst1 || inst0!=3 || inst1!=4)
+	if (inst0 == inst1)
 	{
 		// discard
 		gl_Position = vec4(0, 0, -300, 1);
