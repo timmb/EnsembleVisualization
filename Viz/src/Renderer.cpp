@@ -159,7 +159,7 @@ void Renderer::draw(float elapsedTime, float dt)
 	points.reserve(N);
 	map<int,int> pCount;
 	map<int,int> qCount;
-	double time= app::getElapsedSeconds(); //----
+//	double time= app::getElapsedSeconds(); //----
 	for (int i=0; i<N; ++i)
 	{
 		int randomCount = 0;
@@ -170,13 +170,13 @@ void Renderer::draw(float elapsedTime, float dt)
 //		Rand random;
 //		random.seed(i*12421232);
 //		ofSeedRandom(i*12421232);
-		float period = mRandoms[i][randomCount++]*50.+10;
-		float phase = mRandoms[i][randomCount++]*period;
-		float t = fmod((elapsedTime+phase)/period, 1.f);
-		t *= min(1.f, t+0.2f);
+//		float period = mRandoms[i][randomCount++]*50.+10;
+//		float phase = mRandoms[i][randomCount++]*period;
+//		float t = fmod((elapsedTime+phase)/period, 1.f);
+//		t *= min(1.f, t+0.2f);
 //		Vec2f const& orig = mState.instruments.at(p).pos;
 //		Vec2f const& dest = mState.instruments.at(q).pos;
-		float amount = mState.instruments.at(p).connections.at(q);
+//		float amount = mState.instruments.at(p).connections.at(q);
 		if (0)//(amount>0.3 && ofGetFrameNum()%30==0)
 		{
 			printf("Points for instrument %s and %s:\n", mState.instruments[p].name.c_str(), mState.instruments[q].name.c_str());
@@ -186,8 +186,8 @@ void Renderer::draw(float elapsedTime, float dt)
 //		printf("p %d q %d amount %f\n", p, q, amount);
 //		if (amount<0.5)
 //			continue;
-		Vec2f point;
-		point = interpHermite(p, q, t);
+//		Vec2f point;
+//		point = interpHermite(p, q, t);
 //		random.seed((NUM_INSTRUMENTS*p + q)*123232);
 //		float noise = mPerlin.noise(point.x, point.y, elapsedTime*(mRandoms[i][randomCount++]*.6+.1)*.4);
 //		float noise2 = mPerlin.noise(point.x, point.y, elapsedTime*(mRandoms[i][randomCount++]*.6+.1))*(sin(elapsedTime)+0.5f);

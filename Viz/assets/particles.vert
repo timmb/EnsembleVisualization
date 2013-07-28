@@ -157,23 +157,23 @@ vec2 hermiteSpline(vec2 point0, vec2 tangent0, vec2 point1, vec2 tangent1, float
 
 vec2 hermiteSpline(int inst0, int inst1, float t)
 {
-	float tex_x = inst0*NUM_INSTRUMENTS + inst1;
-	float numPoints = texture2D(ControlPoints, vec2(tex_x, 0)/ControlPointsSize).x;
+	float tex_x = (inst0*NUM_INSTRUMENTS + inst1)/ControlPointsSize.x;
+	float numPoints = texture2D(ControlPoints, vec2(tex_x, 0)).x;
 	float numSegments = numPoints - 1;
 	float segment = min(numSegments-1, int(t*numSegments));
 	float p = t*numSegments - segment;
 	
 	// +1's here are because index 0 is used to store number of
 	// values
-	vec2 segmentPoint = texture2D(ControlPoints, vec2(tex_x, segment+1)/ControlPointsSize).xy;
-	vec2 segmentPointPlus1 = texture2D(ControlPoints, vec2(tex_x, segment+1+1)/ControlPointsSize).xy;
+	vec2 segmentPoint = texture2D(ControlPoints, vec2(tex_x, (segment+1)/ControlPointsSize.y)).xy;
+	vec2 segmentPointPlus1 = texture2D(ControlPoints, vec2(tex_x, (segment+1+1)/ControlPointsSize.y)).xy;
 	// last segment is a special case
 	// ...
 	vec2 tangent0 = segmentPointPlus1 - segmentPoint;
+	vec2 segmentPointPlus2 = texture2D(ControlPoints, vec2(tex_x, (segment+2+1)/ControlPointsSize.y)).xy;
 	vec2 tangent1 = vec2(0);
 	if (segment+2<numPoints)
 	{
-		vec2 segmentPointPlus2 = texture2D(ControlPoints, vec2(tex_x, segment+2+1)/ControlPointsSize).xy;
 		tangent1 = segmentPointPlus2 - segmentPointPlus1;
 	}
 
@@ -240,7 +240,7 @@ void main()
 	amount = gl_Vertex.w;
 //	gl_Position = vec4(gl_Vertex.xy, 0, 1);
 //	gl_Position = getPosition();
-//	gl_Position += calculatePositionNoise();
+	gl_Position += calculatePositionNoise();
 	gl_Position.z = 0;
 	//	Uv = gl_MultiTexCoord0.st;
 	gl_PointSize = 20.12*(1+2*cos(rand())-0.5)*0.7*amount + 6;
