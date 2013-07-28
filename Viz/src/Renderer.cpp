@@ -30,7 +30,7 @@ State Renderer::state() const
 Renderer::Renderer()
 : mEnableDrawConnectionsDebug(false)
 , mShaderLoaded(false)
-, mNumParticles(30000)
+, mNumParticles(80000)
 , mNumRandoms(10)
 {
 	Surface blob = Surface(loadImage(app::getAssetPath("blob.png")));
@@ -48,17 +48,34 @@ Renderer::Renderer()
 	
 	loadShader();
 	
-	Channel32f randomChan(mNumRandoms, mNumParticles);
+	int maxTextureSize(-42);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+	// randomChan holds mNumRandoms random numbers (columns) for each
+	// of the mNumParticles particles (rows)
+	// However, due to implementation limits, the rows are limited
+	// to 10000. After each 10000 particles, a new set of columns
+	// is used (called the colSet).
+	int randomWidth = mNumRandoms * ((mNumParticles-1)/10000 + 1);
+	int randomHeight = min(mNumParticles, 10000);
+	Channel32f randomChan(randomWidth, randomHeight);
+	assert(randomChan.getWidth() < maxTextureSize);
+	assert(randomChan.getHeight() < maxTextureSize);
 	{
 		Rand random;
 		mRandoms = vector<vector<float> >(mNumParticles, vector<float>(mNumRandoms));
 		for (int i=0; i<mNumParticles; i++)
 		{
+			int colSet = i / 10000;
 			for (int j=0; j<mNumRandoms; j++)
 			{
 				float r =random.nextFloat();
+				int col = colSet * mNumRandoms + j;
+				int row = i % 10000;
+				assert(row < randomChan.getHeight());
+				assert(col < randomChan.getWidth());
 				mRandoms.at(i).at(j) = r;
-				*randomChan.getData(j, i) = r;
+				*randomChan.getData(col, row) = r;
+//				*randomChan.getData(j, i) = 0;
 			}
 		}
 	}
@@ -148,38 +165,42 @@ void Renderer::draw(float elapsedTime, float dt)
 		Vec2f point;
 		point = interpHermite(p, q, t);
 //		random.seed((NUM_INSTRUMENTS*p + q)*123232);
-		float noise = mPerlin.noise(point.x, point.y, elapsedTime*(mRandoms[i][randomCount++]*.6+.1)*.4);
-		float noise2 = mPerlin.noise(point.x, point.y, elapsedTime*(mRandoms[i][randomCount++]*.6+.1))*(sin(elapsedTime)+0.5f);
-		float noise3 = mPerlin.noise(point.x, point.y, elapsedTime*0.007);
-		noise *= noise*noise;
+//		float noise = mPerlin.noise(point.x, point.y, elapsedTime*(mRandoms[i][randomCount++]*.6+.1)*.4);
+//		float noise2 = mPerlin.noise(point.x, point.y, elapsedTime*(mRandoms[i][randomCount++]*.6+.1))*(sin(elapsedTime)+0.5f);
+//		float noise3 = mPerlin.noise(point.x, point.y, elapsedTime*0.007);
+//		noise *= noise*noise;
 //		random.seed(i*124212);
-		float brightness = sq(mRandoms[i][randomCount++]*0.63) * (0.3+0.7*amount);
-		float scaleFactor = 1.+2*cos(mRandoms[i][randomCount++]-.5) * 0.7;
-		float size = 0.012f *scaleFactor * amount;
-		point += Vec2f(cos(2*PI*noise+noise3), sin(2*PI*noise+noise3)) * (0.015+(noise2*0.02-0.05) + 0.03*noise3);
-		float redness = 0.f;
-		if (mRandoms[i][randomCount++]>0.94)
-			redness = mRandoms[i][randomCount++]*.4+.3;
+//		float brightness = sq(mRandoms[i][randomCount++]*0.63) * (0.3+0.7*amount);
+//		float scaleFactor = 1.+2*cos(mRandoms[i][randomCount++]-.5) * 0.7;
+//		float size = 0.012f *scaleFactor * amount;
+//		point += Vec2f(cos(2*PI*noise+noise3), sin(2*PI*noise+noise3)) * (0.015+(noise2*0.02-0.05) + 0.03*noise3);
+//		float redness = 0.f;
+//		if (mRandoms[i][randomCount++]>0.94)
+//			redness = mRandoms[i][randomCount++]*.4+.3;
 //		glColor4f(0.94,1-redness*redness,1-redness, brightness);
 //		gl::draw(mParticleTex, Rectf(point, Vec2f(size, size)));
 //		gl::color(ColorAf(1,1,1,1));
 //		mParticleTex->bind();
 //		size = 0.1;
 		// x, y, id, size
-		points.push_back(Vec4f(point.x, point.y, points.size(), size));
+		points.push_back(Vec4f(point.x, point.y, points.size(), amount));
 //		gl::drawSolidRect(Rectf(point-Vec2f(size, size), point+Vec2f(size, size)));
 
 	}
-	tt += app::getElapsedSeconds() - time; // ----
-	cout << tt << endl;
+//	tt += app::getElapsedSeconds() - time; // ----
+//	cout << tt << endl;
+	static float prevTime = 0;
+	float frameTime = elapsedTime - prevTime;
+	prevTime = elapsedTime;
+	cout << "frame: "<< frameTime << endl;
 	
-	render(points);
+	render(elapsedTime, points);
 		
 	if (mEnableDrawConnectionsDebug)
 		drawConnectionsDebug();
 }
 
-void Renderer::render(std::vector<ci::Vec4f> const& points)
+void Renderer::render(float elapsedTime, std::vector<ci::Vec4f> const& points)
 {
 	glClearColor(0,0,0,0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -192,15 +213,17 @@ void Renderer::render(std::vector<ci::Vec4f> const& points)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	
 	glEnable(GL_TEXTURE_2D);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, mRandomTex->getId());
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, mParticleTex->getId());
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, mRandomTex->getId());
 	if (mShaderLoaded)
 	{
 		mShader->bind();
 		mShader->uniform("Tex", 0);
 		mShader->uniform("Rand", 1);
+		mShader->uniform("numRandomsPerParticle", mNumRandoms);
+		mShader->uniform("time", elapsedTime);
 	}
 	glMatrixMode(GL_MODELVIEW);
 	glEnable(GL_POINT_SPRITE);
