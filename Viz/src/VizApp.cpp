@@ -5,6 +5,7 @@
 #include "State.h"
 #include "OscReceiver.h"
 #include "ControlPointEditor.h"
+#include "cinder/gl/Fbo.h"
 
 using namespace std;
 
@@ -42,6 +43,11 @@ private:
 	int mCurrentOrig;
 	int mCurrentDest;
 	bool mPrintFrameRate;
+	
+	// to allow warping, everything is drawn to fbo
+	ci::gl::Fbo mFbo;
+	// FBO size can be different from window size
+	ci::Vec2i mRenderResolution;
 };
 
 VizApp::VizApp()
@@ -55,6 +61,7 @@ VizApp::VizApp()
 , mCurrentOrig(-1)
 , mCurrentDest(-1)
 , mPrintFrameRate(false)
+, mRenderResolution(1280, 960)
 {
 }
 
@@ -69,6 +76,7 @@ void VizApp::setup()
 	mRenderer->setState(State::randomState(0));
 	mOscReceiver.setup(mListenPort, mStabilizerHost, mStabilizerPort);
 	mEditor.setup(mRenderer);
+	mFbo = ci::gl::Fbo(mRenderResolution.x, mRenderResolution.y, true);
 }
 
 void VizApp::mouseDown( ci::app::MouseEvent event )
@@ -203,10 +211,46 @@ void VizApp::update()
 
 void VizApp::draw()
 {
-	// clear out the window with black
-	ci::gl::clear( ci::Color( 0, 0, 0 ) );
-	mRenderer->draw(mElapsedTime, mDt);
-	mEditor.draw(mElapsedTime, mDt);
+	using namespace ci;
+	
+	mFbo.bindFramebuffer();
+	gl::setViewport(mFbo.getBounds());
+	{
+		// clear out the window with black
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+//		gl::scale(Vec3f(Vec2f(mRenderResolution)/getWindowSize(), 1));
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		gl::clear( Color( 0, 0, 0 ) );
+		mRenderer->draw(mElapsedTime, mDt);
+		mEditor.draw(mElapsedTime, mDt);
+	}
+	mFbo.unbindFramebuffer();
+	gl::setViewport(getWindowBounds());
+	gl::disableAlphaBlending();
+	gl::clear(Color::black());
+	gl::color(Color::white());
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	tmb::Quad quad = mEditor.warpQuad();
+//	cout << "Warp quad: " << quad << endl;
+	mFbo.bindTexture();
+	glBegin(GL_TRIANGLE_FAN);
+	{
+		gl::texCoord(0, 1);
+		gl::vertex(quad.tl);
+		gl::texCoord(1, 1);
+		gl::vertex(quad.tr);
+		gl::texCoord(1, 0);
+		gl::vertex(quad.br);
+		gl::texCoord(0, 0);
+		gl::vertex(quad.bl);
+	}
+	glEnd();
+//	mFbo.unbindTexture();
 }
 
 CINDER_APP_NATIVE( VizApp, ci::app::RendererGl )

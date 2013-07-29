@@ -36,6 +36,8 @@ public:
 	void mouseDragged(ci::Vec2f const& pos, int button);
 	void mouseReleased(int button);
 	
+	tmb::Quad warpQuad() const { return mWarpQuad; }
+	
 private:
 	/// Call to update stuff when something changes
 	void notify();
@@ -56,7 +58,6 @@ private:
 	typedef int Corner;
 	Corner mCurrentlyBeingDragged;
 	ci::Vec2f mDragOffset;
-	ci::Matrix44f mWarpTransform;
 	void updateWarpTransform();
 
 	std::string mStatus;

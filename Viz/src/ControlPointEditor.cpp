@@ -11,9 +11,9 @@
 #include "cinder/Utilities.h"
 #include <ostream>
 #include <fstream>
-#include "CinderOpenCV.h"
+//#include "CinderOpenCV.h"
 #include <boost/assign.hpp>
-#include "cinder/Matrix.h"
+//#include "cinder/Matrix.h"
 
 using namespace ci;
 using namespace std;
@@ -61,6 +61,7 @@ void ControlPointEditor::setup(Renderer* renderer)
 void ControlPointEditor::save()
 {
 	using namespace Json;
+	using ci::toString;
 	Value jRoot;
 	Value& jPoints = jRoot["control points"];
 	for (int i=0; i<NUM_INSTRUMENTS; i++)
@@ -71,6 +72,11 @@ void ControlPointEditor::save()
 				for (int l=0; l<mControlPoints[i][j][k].DIM; l++)
 					jPoints[i][j][k][l] = mControlPoints[i][j][k][l];
 		}
+	Value& jWarpQuad = jRoot["warp quad"];
+	jWarpQuad["top left"] = toString(mWarpQuad.tl);
+	jWarpQuad["top right"] = toString(mWarpQuad.tr);
+	jWarpQuad["bottom right"] = toString(mWarpQuad.br);
+	jWarpQuad["bottom left"] = toString(mWarpQuad.bl);
 	ofstream out;
 	out.open(mJsonFilename.c_str());
 	if (out.good())
@@ -103,6 +109,32 @@ void ControlPointEditor::load()
 		<< reader.getFormatedErrorMessages() << endl;
 		return;
 	}
+	Value& jWarpQuad = jRoot["warp quad"];
+	if (jWarpQuad.isNull())
+	{
+		cout << "WARNING: Could not find 'warp quad' element"<<endl;
+		success = false;
+	}
+	else
+	{
+		bool warpSuccess = true;
+		Vec2f tl, tr, br, bl;
+		warpSuccess =
+		   (jWarpQuad["top left"].asString()>>tl)
+		&& (jWarpQuad["top right"].asString()>>tr)
+		&& (jWarpQuad["bottom right"].asString()>>br)
+		&& (jWarpQuad["bottom left"].asString()>> bl);
+		if (warpSuccess)
+		{
+			mWarpQuad = tmb::Quad(tl, tr, br, bl);
+		}
+		else
+		{
+			cout << "WARNING: Failed to understand in 'warp quad' element."<<endl;
+			success = false;
+		}
+	}
+		
 	Value& jControlPoints = jRoot["control points"];
 	if (jControlPoints.isNull())
 	{
@@ -115,7 +147,7 @@ void ControlPointEditor::load()
 		Value& jPointsOrig = jControlPoints[i];
 		if (jPointsOrig.isNull())
 		{
-			cout << "WARNING: Could not read control points from origin insturment "<<i<<endl;
+			cout << "WARNING: Could not read control points from origin instrument "<<i<<endl;
 			continue;
 		}
 		for (int j=0; j<NUM_INSTRUMENTS; j++)
@@ -181,7 +213,7 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 	if (!state.debugMode)
 		return;
 	auto instruments = state.instruments;
-	
+
 	ci::ColorAf editCol(0,1,0,0.8);
 	ci::ColorAf visibleCol(1,1,1,0.4);
 //	float p = sin(elapsedTime)*.5 + .5;
@@ -191,12 +223,11 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 	// normalized coordinates: 2x2 square centred at origin
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glLoadMatrixf(mWarpTransform);
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glDisable(GL_TEXTURE_2D);
-
+	glBindTexture(GL_TEXTURE_2D, 0);
+//	return;
 	ci::gl::enableAdditiveBlending();
 	//	glColor4f(1,1,1,0.8);
 	assert(instruments.size() == mInstrumentVisibility.size());
@@ -267,11 +298,12 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 	}
 	
 	// status text
-	gl::setMatricesWindow(app::getWindowWidth(), app::getWindowHeight());
+//	gl::setMatricesWindow(app::getWindowWidth(), app::getWindowHeight());
+	gl::setMatricesWindow(gl::getViewport().getWidth(), gl::getViewport().getHeight());
 //	ofSetupScreen();
 	gl::color(255, 163, 183);
-	tmb::drawString(mStatus, ci::Vec2f(10, 10), false);
 	gl::enableAlphaBlending();
+	tmb::drawString(mStatus, ci::Vec2f(10, 20), false);
 
 }
 
@@ -362,16 +394,16 @@ void ControlPointEditor::mouseDragged(ci::Vec2f const& pos, int button)
 		switch (mCurrentlyBeingDragged)
 		{
 			case TL:
-				mWarpQuad.tl = pos;
+				mWarpQuad.tl = p;
 				break;
 			case TR:
-				mWarpQuad.tr = pos;
+				mWarpQuad.tr = p;
 				break;
 			case BR:
-				mWarpQuad.br = pos;
+				mWarpQuad.br = p;
 				break;
 			case BL:
-				mWarpQuad.bl = pos;
+				mWarpQuad.bl = p;
 				break;
 			default:
 				break;
@@ -380,43 +412,10 @@ void ControlPointEditor::mouseDragged(ci::Vec2f const& pos, int button)
 	updateWarpTransform();
 }
 
-cv::Point2f toCv(ci::Vec2f const& v)
-{
-	return cv::Point2f(v.x, v.y);
-}
 
 void ControlPointEditor::updateWarpTransform()
 {
-	mWarpTransform = Matrix44f::identity();
-	using namespace cv;
-	using cv::Point2f;
-	static vector<Point2f> orig = boost::assign::list_of
-	(Point2f(-1, 1))(Point2f(1,1))(Point2f(1,-1))(Point2f(-1,-1));
-	vector<Point2f> dest(4);
-	dest[0] = toCv(mWarpQuad.tl);
-	dest[1] = toCv(mWarpQuad.tr);
-	dest[2] = toCv(mWarpQuad.br);
-	dest[3] = toCv(mWarpQuad.bl);
-	Mat transform = cv::getPerspectiveTransform(orig, dest);
-	cout << "cv transform size " << transform.size() << endl;
-	cout << "cv transform\n" << transform << endl;
-	for (int i=0; i<3; i++)
-	{
-		for (int j=0; j<3; j++)
-		{
-			// cinder is cols then rows
-			mWarpTransform.mcols[j][i] = transform.at<double>(cv::Point(j, i));
-		}
-	}
-	cout << "orig " << orig << endl;
-	cout << "dest " << dest << endl;
-	cout << "transform matrix\n" << mWarpTransform << endl;
-	cout << "transformed orig:\n"
-	for (int i=0; i<4; i++)
-	{
-		cv::warpPersective
-		cout << orig.at(i) << " -> " <<
-	}
+
 }
 
 void ControlPointEditor::mouseReleased(int button)

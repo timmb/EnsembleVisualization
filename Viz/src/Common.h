@@ -13,7 +13,9 @@
 #include "cinder/gl/gl.h"
 #include "cinder/Font.h"
 #include <iostream>
+#include <ios>
 #include <map>
+#include <sstream>
 
 
 typedef std::map<int,std::map<int,std::vector<ci::Vec2f> > > ControlPointMap;
@@ -77,4 +79,39 @@ namespace tmb
 		, bl(bl_)
 		{}
 	};
+	
+	std::ostream& operator<<(std::ostream& outstream, Quad quad);
+}
+	
+namespace cinder
+{
+	template <typename T>
+	std::istream& operator>>( std::istream& lhs, Vec2<T>& rhs )
+	{
+		Vec2f v;
+		char c = '\0';
+		if (!(lhs >> c) || c!='[')
+		{
+			lhs.setstate(std::ios_base::failbit);
+		}
+		if (lhs)
+			lhs >> v.x;
+		if (lhs && (!(lhs>>c) || c!=','))
+			lhs.setstate(std::ios_base::failbit);
+		if (lhs)
+			lhs >> v.y;
+		if (lhs && (!(lhs>>c) || c!=']'))
+			lhs.setstate(std::ios_base::failbit);
+		if (lhs)
+			rhs = v;
+		return lhs;
+	}
+	
+	template <typename T>
+	bool operator>>(std::string const& lhs, Vec2<T>& rhs)
+	{
+		std::istringstream ss(lhs);
+		ss >> rhs;
+		return ss.good();
+	}
 }
