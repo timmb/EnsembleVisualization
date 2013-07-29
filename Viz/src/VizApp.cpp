@@ -219,7 +219,6 @@ void VizApp::draw()
 		// clear out the window with black
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-//		gl::scale(Vec3f(Vec2f(mRenderResolution)/getWindowSize(), 1));
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		gl::clear( Color( 0, 0, 0 ) );
@@ -236,9 +235,11 @@ void VizApp::draw()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	tmb::Quad quad = mEditor.warpQuad();
+	// tmp
+	quad = tmb::Quad();
 //	cout << "Warp quad: " << quad << endl;
 	mFbo.bindTexture();
-	glBegin(GL_TRIANGLE_FAN);
+	glBegin(GL_QUADS);
 	{
 		gl::texCoord(0, 1);
 		gl::vertex(quad.tl);

@@ -11,7 +11,7 @@
 #include "cinder/Utilities.h"
 #include <ostream>
 #include <fstream>
-//#include "CinderOpenCV.h"
+#include "CinderOpenCV.h"
 #include <boost/assign.hpp>
 //#include "cinder/Matrix.h"
 
@@ -130,7 +130,7 @@ void ControlPointEditor::load()
 		}
 		else
 		{
-			cout << "WARNING: Failed to understand in 'warp quad' element."<<endl;
+			cout << "WARNING: Failed to parse 'warp quad' element."<<endl;
 			success = false;
 		}
 	}
@@ -216,18 +216,63 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 
 	ci::ColorAf editCol(0,1,0,0.8);
 	ci::ColorAf visibleCol(1,1,1,0.4);
-//	float p = sin(elapsedTime)*.5 + .5;
 	ci::ColorAf editingControlPoint(.4,1.,.4,0.8);
 	ci::ColorAf notEditingControlPoint(.5,.5,1,0.2);
 	
 	// normalized coordinates: 2x2 square centred at origin
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	
+	// tmp testbed
+	{
+		using namespace cv;
+		// quad warping drawing on http://forum.openframeworks.cc/index.php/topic,509.msg2429.html#msg2429
+		vector<Point2f> src = boost::assign::list_of
+			(toOcv(mOriginalQuad.tl))
+			(toOcv(mOriginalQuad.tr))
+			(toOcv(mOriginalQuad.br))
+			(toOcv(mOriginalQuad.bl));
+		vector<Point2f> dst = boost::assign::list_of
+			(toOcv(mWarpQuad.tl))
+			(toOcv(mWarpQuad.tr))
+			(toOcv(mWarpQuad.br))
+			(toOcv(mWarpQuad.bl));
+		Mat transform(findHomography(src, dst));
+		assert(transform.type()==CV_64F);
+		vector<double> glTransform(16, 0.f);
+		// [From oF theo:]
+		//we need to copy these values
+		//from the 3x3 2D openCV matrix which is row ordered
+		//
+		// ie:   [0][1][2] x
+		//       [3][4][5] y
+		//       [6][7][8] w
+		
+		//to openGL's 4x4 3D column ordered matrix
+		//        x  y  z  w
+		// ie:   [0][3][ ][6]
+		//       [1][4][ ][7]
+		//		 [ ][ ][ ][ ]
+		//       [2][5][ ][9]
+		//
+		auto& myMatrix = glTransform;
+		glTransform[0] = transform.at<double>(0);
+		glTransform[4] = transform.at<double>(1);
+		glTransform[12]	= transform.at<double>(2);
+		
+		glTransform[1] = transform.at<double>(3);
+		glTransform[5] = transform.at<double>(4);
+		glTransform[13]	= transform.at<double>(5);
+		
+		glTransform[3] = transform.at<double>(6);
+		glTransform[7] = transform.at<double>(7);
+		glTransform[15]	= transform.at<double>(8);
+		
+		glMultMatrixd(glTransform.data());
+	}
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	
 	glBindTexture(GL_TEXTURE_2D, 0);
-//	return;
 	ci::gl::enableAdditiveBlending();
 	//	glColor4f(1,1,1,0.8);
 	assert(instruments.size() == mInstrumentVisibility.size());

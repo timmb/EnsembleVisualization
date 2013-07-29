@@ -72,11 +72,19 @@ namespace tmb
 	
 	struct Quad {
 		ci::Vec2f tl, tr, br, bl;
-		Quad(ci::Vec2f const& tl_=ci::Vec2f(), ci::Vec2f const& tr_=ci::Vec2f(), ci::Vec2f const& br_=ci::Vec2f(), ci::Vec2f const& bl_=ci::Vec2f())
+		
+		Quad(ci::Vec2f const& tl_, ci::Vec2f const& tr_, ci::Vec2f const& br_, ci::Vec2f const& bl_)
 		: tl(tl_)
 		, tr(tr_)
 		, br(br_)
 		, bl(bl_)
+		{}
+		
+		Quad()
+		: tl(-1, 1)
+		, tr(1, 1)
+		, br(1, -1)
+		, bl(-1, -1)
 		{}
 	};
 	

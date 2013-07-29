@@ -346,8 +346,8 @@
 	"warp quad" : 
 	{
 		"bottom left" : "[-1,-1]",
-		"bottom right" : "[0.9475,-0.96]",
-		"top left" : "[-0.8025,0.855]",
-		"top right" : "[0.4025,0.6225]"
+		"bottom right" : "[1,-1]",
+		"top left" : "[-0.5925,0.47]",
+		"top right" : "[0.52,0.145]"
 	}
 }
