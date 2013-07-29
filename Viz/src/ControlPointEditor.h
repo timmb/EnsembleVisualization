@@ -10,7 +10,7 @@
 
 #include "Common.h"
 #include "Renderer.h"
-
+#include "cinder/Matrix.h"
 
 class ControlPointEditor
 {
@@ -36,7 +36,7 @@ public:
 	void mouseDragged(ci::Vec2f const& pos, int button);
 	void mouseReleased(int button);
 	
-	tmb::Quad warpQuad() const { return mWarpQuad; }
+	ci::Matrix44d warpTransform() const { return mWarpTransform; }
 	
 private:
 	/// Call to update stuff when something changes
@@ -58,6 +58,8 @@ private:
 	typedef int Corner;
 	Corner mCurrentlyBeingDragged;
 	ci::Vec2f mDragOffset;
+	ci::Matrix44d mWarpTransform;
+	/// Set mWarpTransform based on mWarpQuad
 	void updateWarpTransform();
 
 	std::string mStatus;

@@ -347,7 +347,7 @@
 	{
 		"bottom left" : "[-1,-1]",
 		"bottom right" : "[1,-1]",
-		"top left" : "[-0.5925,0.47]",
-		"top right" : "[0.52,0.145]"
+		"top left" : "[-1,1]",
+		"top right" : "[1,1]"
 	}
 }

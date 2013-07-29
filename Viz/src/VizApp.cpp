@@ -67,7 +67,7 @@ VizApp::VizApp()
 
 void VizApp::prepareSettings(Settings *settings)
 {
-	settings->setWindowSize(800, 800);
+	settings->setWindowSize(700, 700);
 }
 
 void VizApp::setup()
@@ -232,11 +232,12 @@ void VizApp::draw()
 	gl::color(Color::white());
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	glMultMatrixd(mEditor.warpTransform());
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	tmb::Quad quad = mEditor.warpQuad();
+//	tmb::Quad quad = mEditor.warpQuad();
 	// tmp
-	quad = tmb::Quad();
+	tmb::Quad quad = tmb::Quad();
 //	cout << "Warp quad: " << quad << endl;
 	mFbo.bindTexture();
 	glBegin(GL_QUADS);

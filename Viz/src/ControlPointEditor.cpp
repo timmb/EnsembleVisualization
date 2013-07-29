@@ -134,6 +134,7 @@ void ControlPointEditor::load()
 			success = false;
 		}
 	}
+	updateWarpTransform();
 		
 	Value& jControlPoints = jRoot["control points"];
 	if (jControlPoints.isNull())
@@ -222,53 +223,7 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 	// normalized coordinates: 2x2 square centred at origin
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	// tmp testbed
-	{
-		using namespace cv;
-		// quad warping drawing on http://forum.openframeworks.cc/index.php/topic,509.msg2429.html#msg2429
-		vector<Point2f> src = boost::assign::list_of
-			(toOcv(mOriginalQuad.tl))
-			(toOcv(mOriginalQuad.tr))
-			(toOcv(mOriginalQuad.br))
-			(toOcv(mOriginalQuad.bl));
-		vector<Point2f> dst = boost::assign::list_of
-			(toOcv(mWarpQuad.tl))
-			(toOcv(mWarpQuad.tr))
-			(toOcv(mWarpQuad.br))
-			(toOcv(mWarpQuad.bl));
-		Mat transform(findHomography(src, dst));
-		assert(transform.type()==CV_64F);
-		vector<double> glTransform(16, 0.f);
-		// [From oF theo:]
-		//we need to copy these values
-		//from the 3x3 2D openCV matrix which is row ordered
-		//
-		// ie:   [0][1][2] x
-		//       [3][4][5] y
-		//       [6][7][8] w
-		
-		//to openGL's 4x4 3D column ordered matrix
-		//        x  y  z  w
-		// ie:   [0][3][ ][6]
-		//       [1][4][ ][7]
-		//		 [ ][ ][ ][ ]
-		//       [2][5][ ][9]
-		//
-		auto& myMatrix = glTransform;
-		glTransform[0] = transform.at<double>(0);
-		glTransform[4] = transform.at<double>(1);
-		glTransform[12]	= transform.at<double>(2);
-		
-		glTransform[1] = transform.at<double>(3);
-		glTransform[5] = transform.at<double>(4);
-		glTransform[13]	= transform.at<double>(5);
-		
-		glTransform[3] = transform.at<double>(6);
-		glTransform[7] = transform.at<double>(7);
-		glTransform[15]	= transform.at<double>(8);
-		
-		glMultMatrixd(glTransform.data());
-	}
+
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	
@@ -322,6 +277,8 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 	if (mIsInWarpMode)
 	{
 		gl::color(.85, .85, 1., 0.875);
+		glPushAttrib(GL_LINE_WIDTH);
+		glLineWidth(3);
 		// draw lines to help keystone
 		for (int i=0; i<10; i++)
 		{
@@ -333,6 +290,7 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 			float y = i/9.f;
 			gl::drawLine(Vec2f(-1, y*2-1.), Vec2f(+1, y*2-1));
 		}
+		glPopAttrib();
 		// draw corners
 		gl::color(1,0,0,0.9);
 		float radius = 0.2;
@@ -460,7 +418,49 @@ void ControlPointEditor::mouseDragged(ci::Vec2f const& pos, int button)
 
 void ControlPointEditor::updateWarpTransform()
 {
-
+	using namespace cv;
+	// quad warping drawing on http://forum.openframeworks.cc/index.php/topic,509.msg2429.html#msg2429
+	vector<Point2f> src = boost::assign::list_of
+		(toOcv(mOriginalQuad.tl))
+		(toOcv(mOriginalQuad.tr))
+		(toOcv(mOriginalQuad.br))
+		(toOcv(mOriginalQuad.bl));
+	vector<Point2f> dst = boost::assign::list_of
+		(toOcv(mWarpQuad.tl))
+		(toOcv(mWarpQuad.tr))
+		(toOcv(mWarpQuad.br))
+		(toOcv(mWarpQuad.bl));
+	Mat transform(findHomography(src, dst));
+	assert(transform.type()==CV_64F);
+	vector<double> glTransform(16, 0.f);
+	// [From oF theo:]
+	//we need to copy these values
+	//from the 3x3 2D openCV matrix which is row ordered
+	//
+	// ie:   [0][1][2] x
+	//       [3][4][5] y
+	//       [6][7][8] w
+	
+	//to openGL's 4x4 3D column ordered matrix
+	//        x  y  z  w
+	// ie:   [0][3][ ][6]
+	//       [1][4][ ][7]
+	//		 [ ][ ][ ][ ]
+	//       [2][5][ ][9]
+	//
+	mWarpTransform.m[0] = transform.at<double>(0);
+	mWarpTransform.m[4] = transform.at<double>(1);
+	mWarpTransform.m[12] = transform.at<double>(2);
+	
+	mWarpTransform.m[1] = transform.at<double>(3);
+	mWarpTransform.m[5] = transform.at<double>(4);
+	mWarpTransform.m[13] = transform.at<double>(5);
+	
+	mWarpTransform.m[3] = transform.at<double>(6);
+	mWarpTransform.m[7] = transform.at<double>(7);
+	mWarpTransform.m[15] = transform.at<double>(8);
+	
+	//		glMultMatrixd(mWarpTransform.m);
 }
 
 void ControlPointEditor::mouseReleased(int button)
