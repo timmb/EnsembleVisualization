@@ -6,5 +6,5 @@ varying float brightness;
 void main()
 {
 	gl_FragColor = texture2D(Tex, gl_PointCoord);
-	gl_FragColor.a *= brightness;
+	gl_FragColor.a *= 0.021*brightness;
 }

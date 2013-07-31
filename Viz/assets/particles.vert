@@ -220,8 +220,8 @@ vec4 calculatePositionNoise()
 void main()
 {
 	id = gl_Vertex.z;
-	randRow = mod(id, 10000);
-	randColOffset = int(randRow / 10000) * numRandomsPerParticle;
+	randRow = mod(id, 16000);
+	randColOffset = int(randRow / 16000) * numRandomsPerParticle;
 
 	inst0 = int(mod(id,NUM_INSTRUMENTS));
 	inst1 = int(mod(floor(id/NUM_INSTRUMENTS), NUM_INSTRUMENTS));
@@ -243,8 +243,9 @@ void main()
 //	gl_Position += calculatePositionNoise();
 	gl_Position.z = 0;
 	//	Uv = gl_MultiTexCoord0.st;
-	gl_PointSize = 20.12*(1+2*cos(rand())-0.5)*0.7*amount + 6;
-	brightness = rand()*.1315 ;//sq(rand()*0.63) * (0.3+0.7*amount);
+	gl_PointSize = 20.12*(1+2*cos(rand())-0.5)*0.7*amount*1.2 + 6 + 3;
+	brightness = rand()*.1315+0.04 ;//sq(rand()*0.63) * (0.3+0.7*amount);
+	gl_Position.xy += vec2(rand()*0.002, rand()*0.002);
 }
 
 

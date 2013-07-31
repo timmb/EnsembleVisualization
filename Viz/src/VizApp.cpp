@@ -221,7 +221,11 @@ void VizApp::draw()
 		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		gl::clear( Color( 0, 0, 0 ) );
+//		if (getElapsedFrames()%5==0)
+//			gl::clear( Color( 0, 0, 0 ) );
+		gl::enableAlphaBlending();
+		gl::color(ColorA(0,0,0,0.7));
+		gl::drawSolidRect(Rectf(-1, -1, 1, 1));
 		mRenderer->draw(mElapsedTime, mDt);
 		mEditor.draw(mElapsedTime, mDt);
 	}

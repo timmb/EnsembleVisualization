@@ -30,8 +30,8 @@ State Renderer::state() const
 Renderer::Renderer()
 : mEnableDrawConnectionsDebug(false)
 , mShaderLoaded(false)
-, mNumParticles(30000)
-, mNumRandoms(10)
+, mNumParticles(100000)
+, mNumRandoms(9)
 {
 	Surface blob = Surface(loadImage(app::getAssetPath("blob.png")));
 	mParticleTex = gl::Texture::create(blob);
@@ -79,10 +79,10 @@ Renderer::Renderer()
 	// randomChan holds mNumRandoms random numbers (columns) for each
 	// of the mNumParticles particles (rows)
 	// However, due to implementation limits, the rows are limited
-	// to 10000. After each 10000 particles, a new set of columns
+	// to 16000. After each 16000 particles, a new set of columns
 	// is used (called the colSet).
-	int randomWidth = mNumRandoms * ((mNumParticles-1)/10000 + 1);
-	int randomHeight = min(mNumParticles, 10000);
+	int randomWidth = mNumRandoms * ((mNumParticles-1)/16000 + 1);
+	int randomHeight = min(mNumParticles, 16000);
 	Channel32f randomChan(randomWidth, randomHeight);
 	assert(randomChan.getWidth() < maxTextureSize);
 	assert(randomChan.getHeight() < maxTextureSize);
@@ -91,12 +91,12 @@ Renderer::Renderer()
 		mRandoms = vector<vector<float> >(mNumParticles, vector<float>(mNumRandoms));
 		for (int i=0; i<mNumParticles; i++)
 		{
-			int colSet = i / 10000;
+			int colSet = i / 16000;
 			for (int j=0; j<mNumRandoms; j++)
 			{
 				float r =random.nextFloat();
 				int col = colSet * mNumRandoms + j;
-				int row = i % 10000;
+				int row = i % 16000;
 				assert(row < randomChan.getHeight());
 				assert(col < randomChan.getWidth());
 				mRandoms.at(i).at(j) = r;
@@ -226,7 +226,7 @@ void Renderer::draw(float elapsedTime, float dt)
 void Renderer::render(float elapsedTime, std::vector<ci::Vec4f> const& points)
 {
 	glClearColor(0,0,0,0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// normalized coordinates: 2x2 square centred at origin
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
