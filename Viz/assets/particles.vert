@@ -236,7 +236,7 @@ void main()
 	float phase = rand()*period;
 	float t = mod((time+phase)/period, 1.f);
 	t *= min(1., t+0.2);
-	gl_Position = vec4(hermiteSpline(inst0, inst1, t), 0, 1);
+	gl_Position = gl_ModelViewProjectionMatrix * vec4(hermiteSpline(inst0, inst1, t), 0, 1);
 	
 	amount = gl_Vertex.w;
 //	gl_Position = vec4(gl_Vertex.xy, 0, 1);

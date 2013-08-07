@@ -33,6 +33,8 @@ public:
 	bool isDrawConnectionsDebugEnabled() const { return mEnableDrawConnectionsDebug; }
 	
 	void loadShader();
+	
+	void setRotation(float radians) { mRotation = radians; }
 
 private:
 	void render(float elapsedTime, std::vector<ci::Vec4f> const& points);
@@ -55,6 +57,7 @@ private:
 	int mNumRandoms; // per particle
 //	int mRandomsRows;
 //	int mRandomsCols;
+	float mRotation;
 	
 	ci::gl::GlslProgRef mShader;
 	bool mShaderLoaded;

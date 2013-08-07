@@ -32,6 +32,7 @@ Renderer::Renderer()
 , mShaderLoaded(false)
 , mNumParticles(100000)
 , mNumRandoms(9)
+, mRotation(0.)
 {
 	Surface blob = Surface(loadImage(app::getAssetPath("blob.png")));
 	mParticleTex = gl::Texture::create(blob);
@@ -232,6 +233,7 @@ void Renderer::render(float elapsedTime, std::vector<ci::Vec4f> const& points)
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	glRotatef(mRotation, 0, 0, 1);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	

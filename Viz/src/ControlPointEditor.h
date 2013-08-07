@@ -43,6 +43,9 @@ public:
 	ci::Vec2i headResolution() const { return mHeadResolution; }
 	bool isSecondHeadEnabled() const { return mEnableSecondHead; }
 	int numHeads() const { return isSecondHeadEnabled()? 2 : 1; }
+	bool isSecondHeadRotated180() const { return mIsSecondHeadRotated180; }
+	/// How much the instruments should be rotated
+	float rotation() const { return mRotation; }
 	
 private:
 	/// Call to update stuff when something changes
@@ -61,6 +64,7 @@ private:
 	// warp editor
 	/// we can have two warp quads, one for each head
 	bool mEnableSecondHead;
+	bool mIsSecondHeadRotated180;
 	/// the quad things get drawn to
 	tmb::Quad mWarpQuad[2];
 	/// the noramlized coordinate quad (-1 to +1)
@@ -73,6 +77,7 @@ private:
 	ci::Matrix44d mWarpTransform[2];
 	/// Set mWarpTransform based on mWarpQuad
 	void updateWarpTransform();
+	float mRotation; ///< In radians
 
 	std::string mStatus;
 	std::string getName(int instrumentNumber) const;

@@ -189,7 +189,6 @@ void VizApp::keyDown(ci::app::KeyEvent event)
 	else if (key=='.')
 		saveScreenshot();
 	mEditor.keyPressed(event);
-
 }
 
 void VizApp::keyUp(ci::app::KeyEvent event)

@@ -29,6 +29,8 @@ ControlPointEditor::ControlPointEditor()
 , mCurrentlyEditingSecondHead(false)
 , mRenderResolution(1000, 1000)
 , mHeadResolution(400, 400)
+, mIsSecondHeadRotated180(true)
+, mRotation(0)
 {
 	for (int i=0; i<NUM_INSTRUMENTS; i++)
 	{
@@ -96,6 +98,7 @@ void ControlPointEditor::save()
 	jRoot["render resolution"] = toString(mRenderResolution);
 	jRoot["head resolution"] = toString(mHeadResolution);
 	jRoot["enable second head"] = mEnableSecondHead;
+	jRoot["rotation"] = mRotation;
 	ofstream out;
 	out.open(mJsonFilename.c_str());
 	if (out.good())
@@ -157,6 +160,16 @@ void ControlPointEditor::load()
 	else
 	{
 		mEnableSecondHead = jEnableSecondHead.asBool();
+	}
+	Value& jRotation = jRoot["rotation"];
+	if (!jRotation.isDouble())
+	{
+		cout << "WARNING: Could not find real valued 'rotation' element"<<endl;
+		success = false;
+	}
+	else
+	{
+		mRotation = jRotation.asDouble();
 	}
 	
 	Value& jWarpQuads = jRoot["warp quads"];
@@ -293,6 +306,8 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 			gl::color(editCol);
 		else
 			gl::color(visibleCol);
+		Vec2f pos = inst.pos;
+		pos.rotate(mRotation);
 		gl::drawSolidEllipse(inst.pos, 0.2, 0.2, 30);
 	}
 	
@@ -302,6 +317,8 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 	{
 		Instrument const& inst = instruments.at(i);
 		gl::pushModelView();
+		Vec2f pos = inst.pos;
+		pos.rotate(mRotation);
 		gl::translate(inst.pos);
 		gl::scale(0.004, -0.004);
 		tmb::drawString(ci::toString(i)+" "+inst.name, Vec2f(), true);
@@ -635,6 +652,7 @@ void ControlPointEditor::notify()
 	if (mRenderer != NULL)
 	{
 		mRenderer->setControlPoints(mControlPoints);
+		mRenderer->setRotation(mRotation);
 	}
 	mStatus = "S to save, L to load, C to draw connections, P to print state, R to randomize state,\nM for maximal state, space to toggle debug interface, E to toggle control point editor\nW to toggle warp editing mode";
 	if (mIsInSetupMode)
