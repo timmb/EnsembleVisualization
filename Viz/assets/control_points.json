@@ -343,8 +343,8 @@
 			[]
 		]
 	],
-	"enable second head" : true,
-	"head resolution" : "[400,400]",
+	"enable second head" : false,
+	"head resolution" : "[500,500]",
 	"render resolution" : "[1000,1000]",
 	"warp quads" : 
 	[

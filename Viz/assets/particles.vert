@@ -206,13 +206,14 @@ vec2 hermiteSpline(int inst0, int inst1, float t)
 
 
 
-vec4 calculatePositionNoise()
+vec4 calculatePositionNoise(float x, float y)
 {
-	float noise = snoise(vec3(gl_Vertex.xy, time*(rand()*.16+.1)*.4));
+	vec2 pos = vec2(x,y);
+	float noise = snoise(vec3(pos, time*(.16+.1)*.4)) - 0.5;
 	noise *= noise;
-	float noise2 = snoise(vec3(gl_Vertex.xy, time*(rand()*.6+.1)))*(sin(time)+0.5);
-	float noise3 = snoise(vec3(gl_Vertex.xy, time*0.007));
-	return vec4(cos(2*pi*noise+noise3), sin(2*pi*noise+noise3), 0, 0)*(0.015+(noise2*0.02-0.05) + 0.03*noise3);
+	float noise2 = snoise(vec3(pos, time*(.6+.1)))*(sin(time)+0.5);
+	float noise3 = snoise(vec3(pos, time*0.007))*2;
+	return vec4(cos(2*pi*noise+noise3), sin(2*pi*noise+noise3), 0, 0)*(0.1015+(noise2*0.02-0.05) + 0.03*noise3);
 }
 
 
@@ -240,11 +241,11 @@ void main()
 	amount = gl_Vertex.w;
 //	gl_Position = vec4(gl_Vertex.xy, 0, 1);
 //	gl_Position = getPosition();
-	gl_Position += calculatePositionNoise()*0.24*rand();
+	gl_Position += calculatePositionNoise(gl_Position.x, gl_Position.y)*0.24;//*rand();
 	gl_Position.z = 0;
 	//	Uv = gl_MultiTexCoord0.st;
-	gl_PointSize = 1.5*(20.12*(1+2*cos(rand())-0.5)*0.7*amount*1.2 + 6 + 3);
-	brightness = rand()*.1315+0.04 ;//sq(rand()*0.63) * (0.3+0.7*amount);
+	gl_PointSize = 1.*(20.12*(1+2*cos(rand())-0.5)*0.7*amount*1.2 + 6 + 6);
+	brightness = rand()*.21315+0.214 ;//sq(rand()*0.63) * (0.3+0.7*amount);
 //	gl_Position.xy += vec2(rand()*0.002, rand()*0.002);
 }
 

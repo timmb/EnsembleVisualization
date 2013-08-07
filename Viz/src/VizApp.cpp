@@ -80,7 +80,8 @@ void VizApp::prepareSettings(Settings *settings)
 {
 	mEditor.loadSettings();
 	mRenderResolution = mEditor.renderResolution();
-	settings->setWindowSize(mHeadResolution.x*2, mHeadResolution.y);
+	mHeadResolution = mEditor.headResolution();
+	settings->setWindowSize(mHeadResolution.x*mEditor.numHeads(), mHeadResolution.y);
 }
 
 void VizApp::setup()

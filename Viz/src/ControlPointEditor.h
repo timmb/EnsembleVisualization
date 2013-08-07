@@ -42,6 +42,7 @@ public:
 	ci::Vec2i renderResolution() const { return mRenderResolution; }
 	ci::Vec2i headResolution() const { return mHeadResolution; }
 	bool isSecondHeadEnabled() const { return mEnableSecondHead; }
+	int numHeads() const { return isSecondHeadEnabled()? 2 : 1; }
 	
 private:
 	/// Call to update stuff when something changes
