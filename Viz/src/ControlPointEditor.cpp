@@ -23,9 +23,12 @@ ControlPointEditor::ControlPointEditor()
 : mRenderer(NULL)
 , mIsInSetupMode(false)
 , mInstrumentVisibility(NUM_INSTRUMENTS, true)
-, mWarpQuad(Vec2f(-1, 1), Vec2f(1, 1), Vec2f(1, -1), Vec2f(-1, -1))
 , mIsInWarpMode(false)
 , mOriginalQuad(Vec2f(-1, 1),Vec2f(1, 1),Vec2f(1, -1),Vec2f(-1, -1))
+, mEnableSecondHead(true)
+, mCurrentlyEditingSecondHead(false)
+, mRenderResolution(1000, 1000)
+, mHeadResolution(400, 400)
 {
 	for (int i=0; i<NUM_INSTRUMENTS; i++)
 	{
@@ -37,6 +40,11 @@ ControlPointEditor::ControlPointEditor()
 	}
 	mEditingInstruments[0] = NONE;
 	mEditingInstruments[1] = NONE;
+	for (int i=0; i<2; i++)
+	{
+		mWarpQuad[i] = Quad(Vec2f(-1, 1), Vec2f(1, 1), Vec2f(1, -1), Vec2f(-1, -1));
+
+	}
 }
 
 ControlPointEditor::~ControlPointEditor()
@@ -50,11 +58,15 @@ void ControlPointEditor::setEnableSetupMode(bool enabled)
 	notify();
 }
 
+void ControlPointEditor::loadSettings()
+{
+	mJsonFilename = "../../../assets/control_points.json";
+	load();
+}
+
 void ControlPointEditor::setup(Renderer* renderer)
 {
-	mJsonFilename = ci::app::getAssetPath("control_points.json").string();
 	mRenderer = renderer;
-	load();
 	notify();
 }
 
@@ -72,11 +84,18 @@ void ControlPointEditor::save()
 				for (int l=0; l<mControlPoints[i][j][k].DIM; l++)
 					jPoints[i][j][k][l] = mControlPoints[i][j][k][l];
 		}
-	Value& jWarpQuad = jRoot["warp quad"];
-	jWarpQuad["top left"] = toString(mWarpQuad.tl);
-	jWarpQuad["top right"] = toString(mWarpQuad.tr);
-	jWarpQuad["bottom right"] = toString(mWarpQuad.br);
-	jWarpQuad["bottom left"] = toString(mWarpQuad.bl);
+	Value& jWarpQuads = jRoot["warp quads"];
+	for (int i=0; i<2; i++)
+	{
+		Value& jWarpQuad = jWarpQuads[i];
+		jWarpQuad["top left"] = toString(mWarpQuad[i].tl);
+		jWarpQuad["top right"] = toString(mWarpQuad[i].tr);
+		jWarpQuad["bottom right"] = toString(mWarpQuad[i].br);
+		jWarpQuad["bottom left"] = toString(mWarpQuad[i].bl);
+	}
+	jRoot["render resolution"] = toString(mRenderResolution);
+	jRoot["head resolution"] = toString(mHeadResolution);
+	jRoot["enable second head"] = mEnableSecondHead;
 	ofstream out;
 	out.open(mJsonFilename.c_str());
 	if (out.good())
@@ -109,29 +128,63 @@ void ControlPointEditor::load()
 		<< reader.getFormatedErrorMessages() << endl;
 		return;
 	}
-	Value& jWarpQuad = jRoot["warp quad"];
-	if (jWarpQuad.isNull())
+	Value& jRenderResolution = jRoot["render resolution"];
+	if (jRenderResolution.isNull())
 	{
-		cout << "WARNING: Could not find 'warp quad' element"<<endl;
+		cout << "WARNING: Could not find 'render resolution' element"<<endl;
+		success = false;
+	}
+	else
+	{
+		success = success && (jRenderResolution.asString() >> mRenderResolution);
+	}
+	Value& jHeadResolution = jRoot["head resolution"];
+	if (jHeadResolution.isNull())
+	{
+		cout << "WARNING: Could not find 'head resolution' element"<<endl;
+		success = false;
+	}
+	else
+	{
+		success = success && (jHeadResolution.asString() >> mHeadResolution);
+	}
+	Value& jEnableSecondHead = jRoot["enable second head"];
+	if (!jEnableSecondHead.isBool())
+	{
+		cout << "WARNING: Could not find boolean 'enable second head' element"<<endl;
+		success = false;
+	}
+	else
+	{
+		mEnableSecondHead = jEnableSecondHead.asBool();
+	}
+	
+	Value& jWarpQuads = jRoot["warp quads"];
+	if (jWarpQuads.isNull())
+	{
+		cout << "WARNING: Could not find 'warp quads' element"<<endl;
 		success = false;
 	}
 	else
 	{
 		bool warpSuccess = true;
-		Vec2f tl, tr, br, bl;
-		warpSuccess =
-		   (jWarpQuad["top left"].asString()>>tl)
-		&& (jWarpQuad["top right"].asString()>>tr)
-		&& (jWarpQuad["bottom right"].asString()>>br)
-		&& (jWarpQuad["bottom left"].asString()>> bl);
-		if (warpSuccess)
+		for (int i=0; i<2; i++)
 		{
-			mWarpQuad = tmb::Quad(tl, tr, br, bl);
-		}
-		else
-		{
-			cout << "WARNING: Failed to parse 'warp quad' element."<<endl;
-			success = false;
+			Vec2f tl, tr, br, bl;
+			warpSuccess =
+			(jWarpQuads[i]["top left"].asString()>>tl)
+			&& (jWarpQuads[i]["top right"].asString()>>tr)
+			&& (jWarpQuads[i]["bottom right"].asString()>>br)
+			&& (jWarpQuads[i]["bottom left"].asString()>> bl);
+			if (warpSuccess)
+			{
+				mWarpQuad[i] = tmb::Quad(tl, tr, br, bl);
+			}
+			else
+			{
+				cout << "WARNING: Failed to parse 'warp quad' element "<<i<<"."<<endl;
+				success = false;
+			}
 		}
 	}
 	updateWarpTransform();
@@ -339,6 +392,13 @@ void ControlPointEditor::keyPressed(ci::app::KeyEvent event)
 				else
 					mInstrumentVisibility.at(inst) = !mInstrumentVisibility.at(inst);
 			}
+			else if (mIsInWarpMode)
+			{
+				if (key=='0')
+					mCurrentlyEditingSecondHead = false;
+				else if (key=='1')
+					mCurrentlyEditingSecondHead = true;
+			}
 		}
 		else if (mIsInSetupMode && event.getCode()==cinder::app::KeyEvent::KEY_BACKSPACE && ctrlPressed)
 		{
@@ -346,7 +406,8 @@ void ControlPointEditor::keyPressed(ci::app::KeyEvent event)
 		}
 		else if (mIsInWarpMode && event.getCode()==cinder::app::KeyEvent::KEY_BACKSPACE && ctrlPressed)
 		{
-			mWarpQuad = mOriginalQuad;
+			mWarpQuad[0] = mOriginalQuad;
+			mWarpQuad[1] = mOriginalQuad;
 			updateWarpTransform();
 		}
 		else if (key=='e')
@@ -391,22 +452,34 @@ void ControlPointEditor::clearPoints()
 
 void ControlPointEditor::mouseDragged(ci::Vec2f const& pos, int button)
 {
+	cout << "pos "<<pos<<endl;
 	if (mIsInWarpMode)
 	{
-		Vec2f p = pos - mDragOffset;
+		Vec2f p = pos;
+		if (mEnableSecondHead)
+		{
+			if (mCurrentlyEditingSecondHead)
+				// [0,1] to [-1, 1]
+				p.x = p.x * 2 - 1;
+			else
+				// [-1, 0] to [-1, 1]
+				p.x = p.x * 2 + 1;
+		}
+		p -= mDragOffset;
+		int headIndex = mCurrentlyEditingSecondHead? 1 : 0;
 		switch (mCurrentlyBeingDragged)
 		{
 			case TL:
-				mWarpQuad.tl = p;
+				mWarpQuad[headIndex].tl = p;
 				break;
 			case TR:
-				mWarpQuad.tr = p;
+				mWarpQuad[headIndex].tr = p;
 				break;
 			case BR:
-				mWarpQuad.br = p;
+				mWarpQuad[headIndex].br = p;
 				break;
 			case BL:
-				mWarpQuad.bl = p;
+				mWarpQuad[headIndex].bl = p;
 				break;
 			default:
 				break;
@@ -418,49 +491,53 @@ void ControlPointEditor::mouseDragged(ci::Vec2f const& pos, int button)
 
 void ControlPointEditor::updateWarpTransform()
 {
+	cout << "left warp quad "<<mWarpQuad[0]<<endl;
+	cout << "right warp quad "<<mWarpQuad[1]<<endl;
+	
 	using namespace cv;
 	// quad warping drawing on http://forum.openframeworks.cc/index.php/topic,509.msg2429.html#msg2429
-	vector<Point2f> src = boost::assign::list_of
-		(toOcv(mOriginalQuad.tl))
-		(toOcv(mOriginalQuad.tr))
-		(toOcv(mOriginalQuad.br))
-		(toOcv(mOriginalQuad.bl));
-	vector<Point2f> dst = boost::assign::list_of
-		(toOcv(mWarpQuad.tl))
-		(toOcv(mWarpQuad.tr))
-		(toOcv(mWarpQuad.br))
-		(toOcv(mWarpQuad.bl));
-	Mat transform(findHomography(src, dst));
-	assert(transform.type()==CV_64F);
-	vector<double> glTransform(16, 0.f);
-	// [From oF theo:]
-	//we need to copy these values
-	//from the 3x3 2D openCV matrix which is row ordered
-	//
-	// ie:   [0][1][2] x
-	//       [3][4][5] y
-	//       [6][7][8] w
-	
-	//to openGL's 4x4 3D column ordered matrix
-	//        x  y  z  w
-	// ie:   [0][3][ ][6]
-	//       [1][4][ ][7]
-	//		 [ ][ ][ ][ ]
-	//       [2][5][ ][9]
-	//
-	mWarpTransform.m[0] = transform.at<double>(0);
-	mWarpTransform.m[4] = transform.at<double>(1);
-	mWarpTransform.m[12] = transform.at<double>(2);
-	
-	mWarpTransform.m[1] = transform.at<double>(3);
-	mWarpTransform.m[5] = transform.at<double>(4);
-	mWarpTransform.m[13] = transform.at<double>(5);
-	
-	mWarpTransform.m[3] = transform.at<double>(6);
-	mWarpTransform.m[7] = transform.at<double>(7);
-	mWarpTransform.m[15] = transform.at<double>(8);
-	
-	//		glMultMatrixd(mWarpTransform.m);
+	for (int i=0; i<2; i++)
+	{
+		vector<Point2f> src = boost::assign::list_of
+			(toOcv(mOriginalQuad.tl))
+			(toOcv(mOriginalQuad.tr))
+			(toOcv(mOriginalQuad.br))
+			(toOcv(mOriginalQuad.bl));
+		vector<Point2f> dst = boost::assign::list_of
+			(toOcv(mWarpQuad[i].tl))
+			(toOcv(mWarpQuad[i].tr))
+			(toOcv(mWarpQuad[i].br))
+			(toOcv(mWarpQuad[i].bl));
+		Mat transform(findHomography(src, dst));
+		assert(transform.type()==CV_64F);
+		vector<double> glTransform(16, 0.f);
+		// [From oF theo:]
+		//we need to copy these values
+		//from the 3x3 2D openCV matrix which is row ordered
+		//
+		// ie:   [0][1][2] x
+		//       [3][4][5] y
+		//       [6][7][8] w
+		
+		//to openGL's 4x4 3D column ordered matrix
+		//        x  y  z  w
+		// ie:   [0][3][ ][6]
+		//       [1][4][ ][7]
+		//		 [ ][ ][ ][ ]
+		//       [2][5][ ][9]
+		//
+		mWarpTransform[i].m[0] = transform.at<double>(0);
+		mWarpTransform[i].m[4] = transform.at<double>(1);
+		mWarpTransform[i].m[12] = transform.at<double>(2);
+		
+		mWarpTransform[i].m[1] = transform.at<double>(3);
+		mWarpTransform[i].m[5] = transform.at<double>(4);
+		mWarpTransform[i].m[13] = transform.at<double>(5);
+		
+		mWarpTransform[i].m[3] = transform.at<double>(6);
+		mWarpTransform[i].m[7] = transform.at<double>(7);
+		mWarpTransform[i].m[15] = transform.at<double>(8);
+	}
 }
 
 void ControlPointEditor::mouseReleased(int button)
@@ -510,26 +587,39 @@ void ControlPointEditor::mousePressed(ci::Vec2f const& pos, int button)
 	}
 	else if (mIsInWarpMode && button==LEFT)
 	{
+		Vec2f p = pos;
+		cout << "orig pos " << pos << endl;
+		if (mEnableSecondHead)
+		{
+			if (mCurrentlyEditingSecondHead)
+				// [0,1] to [-1, 1]
+				p.x = p.x * 2 - 1;
+			else
+				// [-1, 0] to [-1, 1]
+				p.x = p.x * 2 + 1;
+		}
+		cout << "p " << p << endl;
+		int headIndex = mCurrentlyEditingSecondHead? 1 : 0;
 		const float radius = 0.2;
-		if (pos.distance(mWarpQuad.tl) < radius)
+		if (p.distance(mWarpQuad[headIndex].tl) < radius)
 		{
 			mCurrentlyBeingDragged = TL;
-			mDragOffset = pos - mWarpQuad.tl;
+			mDragOffset = p - mWarpQuad[headIndex].tl;
 		}
-		else if (pos.distance(mWarpQuad.tr) < radius)
+		else if (p.distance(mWarpQuad[headIndex].tr) < radius)
 		{
 			mCurrentlyBeingDragged = TR;
-			mDragOffset = pos - mWarpQuad.tr;
+			mDragOffset = p - mWarpQuad[headIndex].tr;
 		}
-		else if (pos.distance(mWarpQuad.bl) < radius)
+		else if (p.distance(mWarpQuad[headIndex].bl) < radius)
 		{
 			mCurrentlyBeingDragged = BL;
-			mDragOffset = pos - mWarpQuad.bl;
+			mDragOffset = p - mWarpQuad[headIndex].bl;
 		}
-		else if (pos.distance(mWarpQuad.br) < radius)
+		else if (p.distance(mWarpQuad[headIndex].br) < radius)
 		{
 			mCurrentlyBeingDragged = BR;
-			mDragOffset = pos - mWarpQuad.br;
+			mDragOffset = p - mWarpQuad[headIndex].br;
 		}
 		else
 		{
@@ -542,7 +632,10 @@ void ControlPointEditor::mousePressed(ci::Vec2f const& pos, int button)
 
 void ControlPointEditor::notify()
 {
-	mRenderer->setControlPoints(mControlPoints);
+	if (mRenderer != NULL)
+	{
+		mRenderer->setControlPoints(mControlPoints);
+	}
 	mStatus = "S to save, L to load, C to draw connections, P to print state, R to randomize state,\nM for maximal state, space to toggle debug interface, E to toggle control point editor\nW to toggle warp editing mode";
 	if (mIsInSetupMode)
 		mStatus += "\nEditing: "+toString(mEditingInstruments[0])+" "
@@ -550,7 +643,11 @@ void ControlPointEditor::notify()
 		+ getName(mEditingInstruments[1])+"\n<num> to select instruments, control <num> to change visibility"
 		+ "\n(use '-' for no/all instrument(s)), d to deselect, Ctrl Backspace to clear all control points\nStart points at low-numbered instrument";
 	if (mIsInWarpMode)
-		mStatus += "\nWarp editor: Ctrl Backspace to reset the warp quad Drag the corners to warp the screen.";
+	{
+		mStatus += "\nWarp editor: Currently editing ";
+		mStatus += mCurrentlyEditingSecondHead? "RIGHT" : "LEFT";
+		mStatus += " head.\nCtrl Backspace to reset the warp quad Drag the corners to warp the screen.\n0 to edit left head, 1 to edit right head.";
+	}
 }
 
 string ControlPointEditor::getName(int instrumentNumber) const

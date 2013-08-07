@@ -18,6 +18,8 @@ public:
 	ControlPointEditor();
 	~ControlPointEditor();
 	
+	/// Load settings from json
+	void loadSettings();
 	void setup(Renderer* renderer);
 	/// Will only draw when setupmode is enabled
 	void draw(float elapsedTime, float dt);
@@ -36,7 +38,10 @@ public:
 	void mouseDragged(ci::Vec2f const& pos, int button);
 	void mouseReleased(int button);
 	
-	ci::Matrix44d warpTransform() const { return mWarpTransform; }
+	ci::Matrix44d warpTransform(bool getRightHead) const { return mWarpTransform[(int) getRightHead]; }
+	ci::Vec2i renderResolution() const { return mRenderResolution; }
+	ci::Vec2i headResolution() const { return mHeadResolution; }
+	bool isSecondHeadEnabled() const { return mEnableSecondHead; }
 	
 private:
 	/// Call to update stuff when something changes
@@ -49,16 +54,22 @@ private:
 	std::string mJsonFilename;
 	std::map<int, std::map<int, std::vector<ci::Vec2f> > > mControlPoints;
 	
+	ci::Vec2i mRenderResolution;
+	ci::Vec2i mHeadResolution;
+	
 	// warp editor
+	/// we can have two warp quads, one for each head
+	bool mEnableSecondHead;
 	/// the quad things get drawn to
-	tmb::Quad mWarpQuad;
+	tmb::Quad mWarpQuad[2];
 	/// the noramlized coordinate quad (-1 to +1)
 	tmb::Quad mOriginalQuad;
 	enum Corner_ { TL, TR, BR, BL };
 	typedef int Corner;
 	Corner mCurrentlyBeingDragged;
+	bool mCurrentlyEditingSecondHead;
 	ci::Vec2f mDragOffset;
-	ci::Matrix44d mWarpTransform;
+	ci::Matrix44d mWarpTransform[2];
 	/// Set mWarpTransform based on mWarpQuad
 	void updateWarpTransform();
 

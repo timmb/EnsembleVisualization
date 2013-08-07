@@ -343,11 +343,24 @@
 			[]
 		]
 	],
-	"warp quad" : 
-	{
-		"bottom left" : "[-1,-1]",
-		"bottom right" : "[1,-1]",
-		"top left" : "[-1,1]",
-		"top right" : "[1,1]"
-	}
+	"enable second head" : true,
+	"head resolution" : "[400,400]",
+	"render resolution" : "[1000,1000]",
+	"warp quads" : 
+	[
+		
+		{
+			"bottom left" : "[-1,-1]",
+			"bottom right" : "[1,-1]",
+			"top left" : "[-0.795,2.835]",
+			"top right" : "[1,1]"
+		},
+		
+		{
+			"bottom left" : "[-1,-1]",
+			"bottom right" : "[1,-1]",
+			"top left" : "[-1,1]",
+			"top right" : "[1,1]"
+		}
+	]
 }

@@ -8,6 +8,7 @@
 #include "cinder/gl/Fbo.h"
 #include <ctime>
 #include "cinder/Utilities.h"
+#include <boost/assign.hpp>
 
 using namespace std;
 using namespace ci;
@@ -51,8 +52,12 @@ private:
 	
 	// to allow warping, everything is drawn to fbo
 	ci::gl::Fbo mFbo;
+	/// receives warped left head stream
+	ci::gl::Fbo mLeftHead;
+	ci::gl::Fbo mRightHead;
 	// FBO size can be different from window size
 	ci::Vec2i mRenderResolution;
+	ci::Vec2i mHeadResolution;
 };
 
 VizApp::VizApp()
@@ -67,12 +72,15 @@ VizApp::VizApp()
 , mCurrentDest(-1)
 , mPrintFrameRate(false)
 , mRenderResolution(1500, 1500)
+, mHeadResolution(400, 400)
 {
 }
 
 void VizApp::prepareSettings(Settings *settings)
 {
-	settings->setWindowSize(700, 700);
+	mEditor.loadSettings();
+	mRenderResolution = mEditor.renderResolution();
+	settings->setWindowSize(mHeadResolution.x*2, mHeadResolution.y);
 }
 
 void VizApp::setup()
@@ -82,16 +90,24 @@ void VizApp::setup()
 	mOscReceiver.setup(mListenPort, mStabilizerHost, mStabilizerPort);
 	mEditor.setup(mRenderer);
 	mFbo = ci::gl::Fbo(mRenderResolution.x, mRenderResolution.y, true);
-	mFbo.bindFramebuffer();
-	ci::gl::clear(Color::black());
-	mFbo.unbindFramebuffer();
+	mLeftHead = ci::gl::Fbo(mHeadResolution.x, mHeadResolution.y, true);
+	mRightHead = ci::gl::Fbo(mHeadResolution.x, mHeadResolution.y, true);
+	
+	vector<ci::gl::Fbo*> fbos = boost::assign::list_of
+	(&mFbo)(&mLeftHead)(&mRightHead);
+	for (auto it=fbos.begin(); it!=fbos.end(); ++it)
+	{
+		(**it).bindFramebuffer();
+		ci::gl::clear(Color::black());
+		(**it).unbindFramebuffer();
+	}
 }
 
 void VizApp::mouseDown( ci::app::MouseEvent event )
 {
 	using namespace ci;
 	using namespace ci::app;
-	Vec2f pos = Vec2f(float(event.getPos().x)/getWindowWidth() * 2 - 1, float(getWindowWidth() - event.getPos().y)/getWindowHeight() * 2 - 1);
+	Vec2f pos = Vec2f(float(event.getPos().x)/getWindowWidth() * 2 - 1, float(getWindowHeight() - event.getPos().y)/getWindowHeight() * 2 - 1);
 	
 	// legacy oF stuff
 	static const int LEFT = 0;
@@ -118,7 +134,7 @@ void VizApp::mouseDrag(ci::app::MouseEvent event)
 	using namespace ci;
 	using namespace ci::app;
 	mouseMove(event);
-	Vec2f pos = Vec2f(float(event.getPos().x)/getWindowWidth() * 2 - 1, float(getWindowWidth() - event.getPos().y)/getWindowHeight() * 2 - 1);
+	Vec2f pos = Vec2f(float(event.getPos().x)/getWindowWidth() * 2 - 1, float(getWindowHeight() - event.getPos().y)/getWindowHeight() * 2 - 1);
 	int button = event.isLeft()? 0
 	: event.isRight()? 2
 	: event.isMiddle()? 1
@@ -238,6 +254,7 @@ void VizApp::update()
 void VizApp::draw()
 {
 	using namespace ci;
+	using namespace tmb;
 	
 	mFbo.bindFramebuffer();
 	gl::setViewport(mFbo.getBounds());
@@ -256,33 +273,65 @@ void VizApp::draw()
 		mEditor.draw(mElapsedTime, mDt);
 	}
 	mFbo.unbindFramebuffer();
-	gl::setViewport(getWindowBounds());
-	gl::disableAlphaBlending();
 	gl::clear(Color::black());
 	gl::color(Color::white());
+	
+	int numHeads = mEditor.isSecondHeadEnabled()? 2 : 1;
+	vector<gl::Fbo*> headFbos = boost::assign::list_of(&mLeftHead)(&mRightHead);
+	for (int i=0; i<numHeads; i++)
+	{
+		headFbos.at(i)->bindFramebuffer();
+		gl::clear(ColorA::black());
+		gl::setViewport(headFbos.at(i)->getBounds());
+		gl::disableAlphaBlending();
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glMultMatrixd(mEditor.warpTransform(i));
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+//		glTranslatef(i/float(numHeads), 0, 0);
+		tmb::Quad quad = Quad();
+		mFbo.bindTexture();
+		glBegin(GL_QUADS);
+		{
+			gl::texCoord(0, 1);
+			gl::vertex(quad.tl);
+			gl::texCoord(1, 1);
+			gl::vertex(quad.tr);
+			gl::texCoord(1, 0);
+			gl::vertex(quad.br);
+			gl::texCoord(0, 0);
+			gl::vertex(quad.bl);
+		}
+		glEnd();
+		mFbo.unbindTexture();
+		headFbos.at(i)->unbindFramebuffer();
+	}
+	gl::setViewport(getWindowBounds());
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glMultMatrixd(mEditor.warpTransform());
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-//	tmb::Quad quad = mEditor.warpQuad();
-	// tmp
-	tmb::Quad quad = tmb::Quad();
-//	cout << "Warp quad: " << quad << endl;
-	mFbo.bindTexture();
-	glBegin(GL_QUADS);
+	for (int i=0; i<numHeads; i++)
 	{
-		gl::texCoord(0, 1);
-		gl::vertex(quad.tl);
-		gl::texCoord(1, 1);
-		gl::vertex(quad.tr);
-		gl::texCoord(1, 0);
-		gl::vertex(quad.br);
-		gl::texCoord(0, 0);
-		gl::vertex(quad.bl);
+		float x0 = i/float(numHeads) * 2 - 1;
+		float x1 = (i+1)/float(numHeads) * 2 - 1;
+		Vec2f tl(x0, 1), tr(x1, 1), br(x1, -1), bl(x0, -1);
+		headFbos.at(i)->bindTexture();
+		glBegin(GL_QUADS);
+		{
+			gl::texCoord(0, 1);
+			gl::vertex(tl);
+			gl::texCoord(1, 1);
+			gl::vertex(tr);
+			gl::texCoord(1, 0);
+			gl::vertex(br);
+			gl::texCoord(0, 0);
+			gl::vertex(bl);
+		}
+		glEnd();
+		headFbos.at(i)->unbindTexture();
 	}
-	glEnd();
-//	mFbo.unbindTexture();
 }
 
 CINDER_APP_NATIVE( VizApp, ci::app::RendererGl )
