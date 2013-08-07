@@ -240,12 +240,12 @@ void main()
 	amount = gl_Vertex.w;
 //	gl_Position = vec4(gl_Vertex.xy, 0, 1);
 //	gl_Position = getPosition();
-//	gl_Position += calculatePositionNoise();
+	gl_Position += calculatePositionNoise()*0.24*rand();
 	gl_Position.z = 0;
 	//	Uv = gl_MultiTexCoord0.st;
-	gl_PointSize = 20.12*(1+2*cos(rand())-0.5)*0.7*amount*1.2 + 6 + 3;
+	gl_PointSize = 1.5*(20.12*(1+2*cos(rand())-0.5)*0.7*amount*1.2 + 6 + 3);
 	brightness = rand()*.1315+0.04 ;//sq(rand()*0.63) * (0.3+0.7*amount);
-	gl_Position.xy += vec2(rand()*0.002, rand()*0.002);
+//	gl_Position.xy += vec2(rand()*0.002, rand()*0.002);
 }
 
 

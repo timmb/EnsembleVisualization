@@ -6,8 +6,11 @@
 #include "OscReceiver.h"
 #include "ControlPointEditor.h"
 #include "cinder/gl/Fbo.h"
+#include <ctime>
+#include "cinder/Utilities.h"
 
 using namespace std;
+using namespace ci;
 
 class VizApp : public ci::app::AppNative {
   public:
@@ -25,6 +28,8 @@ class VizApp : public ci::app::AppNative {
 	
 	
 private:
+	void saveScreenshot();
+	
 	int mListenPort;
 	std::string mStabilizerHost;
 	int mStabilizerPort;
@@ -61,7 +66,7 @@ VizApp::VizApp()
 , mCurrentOrig(-1)
 , mCurrentDest(-1)
 , mPrintFrameRate(false)
-, mRenderResolution(1280, 960)
+, mRenderResolution(1500, 1500)
 {
 }
 
@@ -77,6 +82,9 @@ void VizApp::setup()
 	mOscReceiver.setup(mListenPort, mStabilizerHost, mStabilizerPort);
 	mEditor.setup(mRenderer);
 	mFbo = ci::gl::Fbo(mRenderResolution.x, mRenderResolution.y, true);
+	mFbo.bindFramebuffer();
+	ci::gl::clear(Color::black());
+	mFbo.unbindFramebuffer();
 }
 
 void VizApp::mouseDown( ci::app::MouseEvent event )
@@ -161,6 +169,8 @@ void VizApp::keyDown(ci::app::KeyEvent event)
 		mRenderer->loadShader();
 	else if (key=='f')
 		mPrintFrameRate = !mPrintFrameRate;
+	else if (key=='.')
+		saveScreenshot();
 	mEditor.keyPressed(event);
 
 }
@@ -177,6 +187,22 @@ std::string VizApp::getName(int instrumentNumber)
 	else if (instrumentNumber<NUM_INSTRUMENTS)
 		return mOscReceiver.state().instruments.at(instrumentNumber).name;
 	else return "error";
+}
+
+void VizApp::saveScreenshot()
+{
+	using namespace ci;
+	Surface8u screenshot(mFbo.getTexture());
+	// make filename
+	
+	time_t t = time(0);   // get time now
+    struct tm * now = localtime( & t );
+	char buf[128];
+	strftime(buf, sizeof(buf), "%Y-%m-%d-%HH-%MM-%SS", now);
+	string filename = string("Ensemble_visualizer_screenshot_")+buf+"_"+toString(getElapsedFrames())+".png";
+	fs::path outPath = fs::path("~") / filename;
+	writeImage(outPath, screenshot);
+	std::cout << "Screenshot saved to " << outPath << endl;
 }
 
 void VizApp::update()
