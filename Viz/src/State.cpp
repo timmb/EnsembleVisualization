@@ -26,7 +26,7 @@ State::State()
 	for (int i=0; i<NUM_INSTRUMENTS; ++i)
 	{
 		float theta = float(i)/NUM_INSTRUMENTS * 2*PI;
-		instruments.at(i) = Instrument(Vec2f(cos(theta), sin(theta)));
+		instruments.at(i) = Instrument(0.95*Vec2f(cos(theta), sin(theta)));
 	}
 }
 
