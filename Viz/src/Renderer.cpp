@@ -30,7 +30,7 @@ State Renderer::state() const
 Renderer::Renderer()
 : mEnableDrawConnectionsDebug(false)
 , mShaderLoaded(false)
-, mNumParticles(100000)
+, mNumParticles(30000)
 , mNumRandoms(9)
 , mRotation(0.)
 {

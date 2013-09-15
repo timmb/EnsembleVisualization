@@ -30,6 +30,7 @@ class VizApp : public ci::app::AppNative {
 	
 private:
 	void saveScreenshot();
+	void toggleFullScreen();
 	
 	int mListenPort;
 	std::string mStabilizerHost;
@@ -78,6 +79,13 @@ VizApp::VizApp()
 
 void VizApp::prepareSettings(Settings *settings)
 {
+	// set display to secondary display if available
+	vector<DisplayRef> displays = Display::getDisplays();
+	if (displays.size()>1)
+	{
+		settings->setDisplay(displays.at(1));
+	}
+
 	mEditor.loadSettings();
 	mRenderResolution = mEditor.renderResolution();
 	mHeadResolution = mEditor.headResolution();
@@ -185,7 +193,16 @@ void VizApp::keyDown(ci::app::KeyEvent event)
 	else if (key=='a')
 		mRenderer->loadShader();
 	else if (key=='f')
-		mPrintFrameRate = !mPrintFrameRate;
+	{
+		if (event.isAccelDown())
+		{
+			toggleFullScreen();
+		}
+		else
+		{
+			mPrintFrameRate = !mPrintFrameRate;
+		}
+	}
 	else if (key=='.')
 		saveScreenshot();
 	mEditor.keyPressed(event);
@@ -203,6 +220,18 @@ std::string VizApp::getName(int instrumentNumber)
 	else if (instrumentNumber<NUM_INSTRUMENTS)
 		return mOscReceiver.state().instruments.at(instrumentNumber).name;
 	else return "error";
+}
+
+void VizApp::toggleFullScreen()
+{
+	if (isFullScreen())
+	{
+		setFullScreen(false);
+	}
+	else
+	{
+		setFullScreen(true);
+	}
 }
 
 void VizApp::saveScreenshot()

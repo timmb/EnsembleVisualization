@@ -344,17 +344,17 @@
 		]
 	],
 	"enable second head" : false,
-	"head resolution" : "[500,500]",
+	"head resolution" : "[1024,1024]",
 	"render resolution" : "[1000,1000]",
-	"rotation" : 0.0,
+	"rotation" : -13.50,
 	"warp quads" : 
 	[
 		
 		{
-			"bottom left" : "[-1,-1]",
-			"bottom right" : "[1,-1]",
-			"top left" : "[-1,1]",
-			"top right" : "[1,1]"
+			"bottom left" : "[-0.651414,-0.724452]",
+			"bottom right" : "[0.837332,-0.75007]",
+			"top left" : "[-1.18778,0.939388]",
+			"top right" : "[1.01776,0.725242]"
 		},
 		
 		{
