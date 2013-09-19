@@ -131,6 +131,17 @@ void ControlPointEditor::load()
 		<< reader.getFormatedErrorMessages() << endl;
 		return;
 	}
+	Value& jHostName = jRoot["host name"];
+	if (jHostName.isNull())
+	{
+		cout << "WARNING: Could not find 'host name' element"<<endl;
+		success = false;
+	}
+	else
+	{
+		mHostName = jHostName.asString();
+		cout << "Loaded hostname: "<<mHostName<<endl;
+	}
 	Value& jRenderResolution = jRoot["render resolution"];
 	if (jRenderResolution.isNull())
 	{

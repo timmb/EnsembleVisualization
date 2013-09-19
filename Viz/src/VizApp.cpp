@@ -87,6 +87,7 @@ void VizApp::prepareSettings(Settings *settings)
 	}
 
 	mEditor.loadSettings();
+	mStabilizerHost = mEditor.hostName();
 	mRenderResolution = mEditor.renderResolution();
 	mHeadResolution = mEditor.headResolution();
 	settings->setWindowSize(mHeadResolution.x*mEditor.numHeads(), mHeadResolution.y);
@@ -189,7 +190,11 @@ void VizApp::keyDown(ci::app::KeyEvent event)
 	else if (key==' ')
 		mOscReceiver.toggleDebugMode();
 	else if (key=='p')
+	{
 		std::cout << "Renderer state:\n"<<mRenderer->state()<<endl;
+		std::cout << "OscReceiver status:\n"<<mOscReceiver.status()<<endl;
+	}
+	
 	else if (key=='a')
 		mRenderer->loadShader();
 	else if (key=='f')

@@ -180,6 +180,7 @@ void Renderer::draw(float elapsedTime, float dt)
 //		Vec2f const& orig = mState.instruments.at(p).pos;
 //		Vec2f const& dest = mState.instruments.at(q).pos;
 		float amount = mState.instruments.at(p).connections.at(q);
+//		std::cout << amount << " / ";
 		if (0)//(amount>0.3 && ofGetFrameNum()%30==0)
 		{
 			printf("Points for instrument %s and %s:\n", mState.instruments[p].name.c_str(), mState.instruments[q].name.c_str());

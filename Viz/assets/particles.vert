@@ -216,6 +216,11 @@ vec4 calculatePositionNoise(float x, float y)
 	return vec4(cos(2*pi*noise+noise3), sin(2*pi*noise+noise3), 0, 0)*(0.1015+(noise2*0.02-0.05) + 0.03*noise3);
 }
 
+float ups_sq(float x)
+{
+	return 1. - (1.-x)*(1.-x);
+}
+
 
 
 void main()
@@ -224,8 +229,8 @@ void main()
 	randRow = mod(id, 16000);
 	randColOffset = int(randRow / 16000) * numRandomsPerParticle;
 
-	inst0 = int(mod(id,NUM_INSTRUMENTS));
-	inst1 = int(mod(floor(id/NUM_INSTRUMENTS), NUM_INSTRUMENTS));
+	inst0 = int(gl_Vertex.x);
+	inst1 = int(gl_Vertex.y);
 	if (inst0 == inst1)// || inst0!=3 || inst1!=4)
 	{
 		// discard
@@ -244,9 +249,14 @@ void main()
 	gl_Position += calculatePositionNoise(gl_Position.x, gl_Position.y)*0.24;//*rand();
 	gl_Position.z = 0;
 	//	Uv = gl_MultiTexCoord0.st;
-	gl_PointSize = 1.*(20.12*(1+2*cos(rand())-0.5)*0.7*amount*1.2 + 6 + 6);
-	brightness = rand()*.21315+0.214 ;//sq(rand()*0.63) * (0.3+0.7*amount);
+	gl_PointSize = 2.05*(20.12*(1+2*cos(rand())-0.5)*0.7*amount*.75);// + (6 + 6)*amount);
+	brightness = ups_sq(amount)*(2*rand()*.21315+0.7543214) ;//sq(rand()*0.63) * (0.3+0.7*amount);
 //	gl_Position.xy += vec2(rand()*0.002, rand()*0.002);
+	if (rand()<0.04)
+	{
+		float x = max(0., sin(time*rand()*rand()*0.572)-0.97)/0.03;
+		gl_PointSize += 40*x*amount*100;
+	}
 }
 
 

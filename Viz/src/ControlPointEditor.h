@@ -46,6 +46,8 @@ public:
 	bool isSecondHeadRotated180() const { return mIsSecondHeadRotated180; }
 	/// How much the instruments should be rotated
 	float rotation() const { return mRotation; }
+	/// Hostname of the stabilizer
+	std::string hostName() const { return mHostName; }
 	
 private:
 	/// Call to update stuff when something changes
@@ -93,5 +95,7 @@ private:
 
 	template <typename T>
 	void push_front(std::vector<T>& dest, T const& value);
+	
+	std::string mHostName;
 };
 
