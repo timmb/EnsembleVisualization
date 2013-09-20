@@ -72,19 +72,19 @@ void OscReceiver::update(float elapsedTime, float dt)
 				printf("ERROR: connections message declares %d instruments but has %d arguments\n", num_insts, m.getNumArgs());
 				continue;
 			}
-			std::cout << "state connections updated"<<endl;
-			std::cout << "new connections: ";
-			for (int i=0; i<num_insts; i++)
-			{
-				for (int j=0; j<num_insts; j++)
-				{
-					// the + 1 is because the first argument is num_insts
-					float v = m.getArgAsFloat(i * num_insts + j + 1);
-					std::cout << i << "->"<<j<<" "<<v<<", ";
-					mState.instruments.at(i).connections.at(j) = v;
-				}
-			}
-			std::cout << endl;
+//			std::cout << "state connections updated"<<endl;
+//			std::cout << "new connections: ";
+//			for (int i=0; i<num_insts; i++)
+//			{
+//				for (int j=0; j<num_insts; j++)
+//				{
+//					// the + 1 is because the first argument is num_insts
+//					float v = m.getArgAsFloat(i * num_insts + j + 1);
+//					std::cout << i << "->"<<j<<" "<<v<<", ";
+//					mState.instruments.at(i).connections.at(j) = v;
+//				}
+//			}
+//			std::cout << endl;
 		}
 		else if (address=="/viz/debug" && m.getArgType(0)==TYPE_INT32)
 		{

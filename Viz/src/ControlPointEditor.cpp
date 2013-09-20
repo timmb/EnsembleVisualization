@@ -60,9 +60,26 @@ void ControlPointEditor::setEnableSetupMode(bool enabled)
 	notify();
 }
 
+// hack to find working directory
 void ControlPointEditor::loadSettings()
 {
-	mJsonFilename = "../../../assets/control_points.json";
+	
+	std::vector<fs::path> dirs = {"assets", "../assets", "../../assets", "../../../assets", "../../../../assets", "../../../../../assets", "../../../../../../assets", "../../../../../../../assets", "../../../../../../../../assets", "../../../../../../../../../assets", "/Users/tim/Documents/Programming/Ensemble/EnsembleVisualization/Viz/assets" };
+	fs::path file = "";
+	fs::path relativePath = "control_points.json";
+	
+	for( vector<fs::path>::const_iterator assetDirIt = dirs.begin(); assetDirIt != dirs.end(); ++assetDirIt ) {
+		if( fs::exists( *assetDirIt / relativePath ) )
+			file = ( *assetDirIt / relativePath );
+		else
+			std::cout << "Searching "<<*assetDirIt<<". " << ( *assetDirIt / relativePath ) << " does not exist. " <<endl;
+	}
+	if (file == "")
+	{
+		std::cerr << "ERROR: Failed to find control_points.json in assets folder(s)."<<std::endl;
+	}
+	
+	mJsonFilename = file.string();
 	load();
 }
 
