@@ -998,7 +998,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../../../Cinder-git/blocks/Cinder-OpenCV/lib/macosx\"",
+					"\"$(CINDER_PATH)/blocks/Cinder-OpenCV/lib/macosx\"",
 				);
 				OTHER_LDFLAGS = "\"$(CINDER_PATH)/lib/libcinder_d.a\"";
 				PRODUCT_NAME = Viz;
@@ -1024,7 +1024,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../../../Cinder-git/blocks/Cinder-OpenCV/lib/macosx\"",
+					"\"$(CINDER_PATH)/blocks/Cinder-OpenCV/lib/macosx\"",
 				);
 				OTHER_LDFLAGS = "\"$(CINDER_PATH)/lib/libcinder.a\"";
 				PRODUCT_NAME = Viz;
@@ -1039,7 +1039,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = i386;
-				CINDER_PATH = "../../Cinder-git";
+				CINDER_PATH = ../../../../Cinder;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -1048,7 +1048,7 @@
 					"\"$(CINDER_PATH)/boost\"",
 					../../lib/jsoncpp/include,
 				);
-				LIBRARY_SEARCH_PATHS = "($CINDER_PATH)/blocks/Cinder-OpenCV/lib/macosx";
+				LIBRARY_SEARCH_PATHS = "$(CINDER_PATH)/blocks/Cinder-OpenCV/lib/macosx";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/include\" ../include ../blocks/OSC/src \"$(CINDER_PATH)/blocks/Cinder-OpenCV/include\" \"$(CINDER_PATH)/blocks/Cinder-OpenCV/include/opencv2\"";
@@ -1060,7 +1060,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = i386;
-				CINDER_PATH = "../../Cinder-git";
+				CINDER_PATH = ../../../../Cinder;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -1069,7 +1069,7 @@
 					"\"$(CINDER_PATH)/boost\"",
 					../../lib/jsoncpp/include,
 				);
-				LIBRARY_SEARCH_PATHS = "($CINDER_PATH)/blocks/Cinder-OpenCV/lib/macosx";
+				LIBRARY_SEARCH_PATHS = "$(CINDER_PATH)/blocks/Cinder-OpenCV/lib/macosx";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 				USER_HEADER_SEARCH_PATHS = "\"$(CINDER_PATH)/include\" ../include ../blocks/OSC/src \"$(CINDER_PATH)/blocks/Cinder-OpenCV/include\" \"$(CINDER_PATH)/blocks/Cinder-OpenCV/include/opencv2\"";

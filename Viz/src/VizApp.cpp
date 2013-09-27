@@ -9,6 +9,12 @@
 #include <ctime>
 #include "cinder/Utilities.h"
 #include <boost/assign.hpp>
+#include <boost/date_time.hpp>
+
+const bool RECORD_FRAMES = false;
+const std::string RECORD_FRAMES_PATH = "/Users/tim/viz_recording";
+std::string RECORD_FRAMES_PREFIX;
+int gFrameNumber = 0;
 
 using namespace std;
 using namespace ci;
@@ -93,8 +99,21 @@ void VizApp::prepareSettings(Settings *settings)
 	settings->setWindowSize(mHeadResolution.x*mEditor.numHeads(), mHeadResolution.y);
 }
 
+std::string dateString()
+{
+	std::ostringstream msg;
+	const boost::posix_time::ptime now =	boost::posix_time::second_clock::local_time();
+	boost::posix_time::time_facet *const f = 	new boost::posix_time::time_facet("%Y%m%d%H%M%S");
+	msg.imbue(std::locale(msg.getloc(),f));
+	msg << now;
+	string s = msg.str();
+	return s;
+}
+
 void VizApp::setup()
 {
+	RECORD_FRAMES_PREFIX = dateString();
+	
 	mRenderer = new Renderer;
 	mRenderer->setState(State::randomState(0));
 	mOscReceiver.setup(mListenPort, mStabilizerHost, mStabilizerPort);
@@ -261,6 +280,11 @@ void VizApp::update()
 	using namespace ci::app;
 
 	float t = getElapsedSeconds();
+	if (RECORD_FRAMES)
+	{
+		// manually update timer
+		t = mElapsedTime += 0.04;
+	}
 	float dt = t - mElapsedTime;
 	mElapsedTime = t;
 	mOscReceiver.update(mElapsedTime, dt);
@@ -307,6 +331,10 @@ void VizApp::draw()
 		mEditor.draw(mElapsedTime, mDt);
 	}
 	mFbo.unbindFramebuffer();
+	if (RECORD_FRAMES)
+	{
+		ci::writeImage(fs::path(RECORD_FRAMES_PATH) / fs::path(RECORD_FRAMES_PREFIX + "_" + toString(gFrameNumber++)+".png"), mFbo.getTexture());
+	}
 	gl::clear(Color::black());
 	gl::color(Color::white());
 	

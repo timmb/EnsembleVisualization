@@ -345,7 +345,7 @@
 	],
 	"enable second head" : false,
 	"head resolution" : "[400,400]",
-	"render resolution" : "[1000,1000]",
+	"render resolution" : "[1080,1080]",
 	"rotation" : -13.50,
 	"warp quads" : 
 	[
