@@ -116,6 +116,7 @@ void ControlPointEditor::save()
 	jRoot["head resolution"] = toString(mHeadResolution);
 	jRoot["enable second head"] = mEnableSecondHead;
 	jRoot["rotation"] = mRotation;
+	jRoot["host name"] = mHostName;
 	ofstream out;
 	out.open(mJsonFilename.c_str());
 	if (out.good())
@@ -190,7 +191,7 @@ void ControlPointEditor::load()
 		mEnableSecondHead = jEnableSecondHead.asBool();
 	}
 	Value& jRotation = jRoot["rotation"];
-	if (!jRotation.isDouble())
+	if (!jRotation.isNumeric())
 	{
 		cout << "WARNING: Could not find real valued 'rotation' element"<<endl;
 		success = false;
@@ -320,6 +321,7 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	gl::rotate(mRotation);
 	
 	glBindTexture(GL_TEXTURE_2D, 0);
 	ci::gl::enableAdditiveBlending();
@@ -335,7 +337,7 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 		else
 			gl::color(visibleCol);
 		Vec2f pos = inst.pos;
-		pos.rotate(mRotation);
+//		pos.rotate(mRotation);
 		gl::drawSolidEllipse(inst.pos, 0.2, 0.2, 30);
 	}
 	
@@ -346,7 +348,7 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 		Instrument const& inst = instruments.at(i);
 		gl::pushModelView();
 		Vec2f pos = inst.pos;
-		pos.rotate(mRotation);
+//		pos.rotate(mRotation);
 		gl::translate(inst.pos);
 		gl::scale(0.004, -0.004);
 		tmb::drawString(ci::toString(i)+" "+inst.name, Vec2f(), true);
