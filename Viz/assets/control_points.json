@@ -345,17 +345,17 @@
 	],
 	"enable second head" : false,
 	"head resolution" : "[400,400]",
-	"host name" : "localhost",
+	"host name" : "192.168.0.100",
 	"render resolution" : "[1080,1080]",
-	"rotation" : 0.0,
+	"rotation" : 135.0,
 	"warp quads" : 
 	[
 		
 		{
-			"bottom left" : "[-1,-1]",
-			"bottom right" : "[1,-1]",
-			"top left" : "[-1,1]",
-			"top right" : "[1,1]"
+			"bottom left" : "[-0.228393,-0.0474604]",
+			"bottom right" : "[0.620893,-0.306508]",
+			"top left" : "[-0.0301785,0.987936]",
+			"top right" : "[0.804167,0.836032]"
 		},
 		
 		{
