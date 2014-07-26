@@ -13,6 +13,7 @@
 #include "cinder/Rand.h"
 #include "cinder/DataSource.h"
 #include "cinder/Channel.h"
+#include "cinder/ImageIo.h"
 
 using namespace ci;
 using namespace std;
