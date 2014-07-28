@@ -13,9 +13,16 @@
 #include "cinder/Rand.h"
 #include "cinder/DataSource.h"
 #include "cinder/Channel.h"
+#include "cinder/ImageIo.h"
 
 using namespace ci;
 using namespace std;
+
+
+#define TEXTURE_ROW_SIZE 16000
+// On Tim's laptop this can be 16000
+// On Daniel's laptop this can be 8000
+
 
 void Renderer::setState(State const& newState)
 {
@@ -80,10 +87,10 @@ Renderer::Renderer()
 	// randomChan holds mNumRandoms random numbers (columns) for each
 	// of the mNumParticles particles (rows)
 	// However, due to implementation limits, the rows are limited
-	// to 16000. After each 16000 particles, a new set of columns
-	// is used (called the colSet).
-	int randomWidth = mNumRandoms * ((mNumParticles-1)/16000 + 1);
-	int randomHeight = min(mNumParticles, 16000);
+	// to TEXTURE_ROW_SIZE. After each TEXTURE_ROW_SIZE particles,
+	// a new set of columns is used (called the colSet).
+	int randomWidth = mNumRandoms * ((mNumParticles-1)/TEXTURE_ROW_SIZE + 1);
+	int randomHeight = min(mNumParticles, TEXTURE_ROW_SIZE);
 	Channel32f randomChan(randomWidth, randomHeight);
 	assert(randomChan.getWidth() < maxTextureSize);
 	assert(randomChan.getHeight() < maxTextureSize);
@@ -92,12 +99,12 @@ Renderer::Renderer()
 		mRandoms = vector<vector<float> >(mNumParticles, vector<float>(mNumRandoms));
 		for (int i=0; i<mNumParticles; i++)
 		{
-			int colSet = i / 16000;
+			int colSet = i / TEXTURE_ROW_SIZE;
 			for (int j=0; j<mNumRandoms; j++)
 			{
 				float r =random.nextFloat();
 				int col = colSet * mNumRandoms + j;
-				int row = i % 16000;
+				int row = i % TEXTURE_ROW_SIZE;
 				assert(row < randomChan.getHeight());
 				assert(col < randomChan.getWidth());
 				mRandoms.at(i).at(j) = r;
@@ -254,6 +261,7 @@ void Renderer::render(float elapsedTime, std::vector<ci::Vec4f> const& points)
 		mShader->uniform("ControlPoints", 2);
 		mShader->uniform("ControlPointsSize", Vec2f(mControlPointsTex->getSize()));
 		mShader->uniform("numRandomsPerParticle", mNumRandoms);
+		mShader->uniform("textureRowSize", TEXTURE_ROW_SIZE);
 		mShader->uniform("time", elapsedTime);
 	}
 	glMatrixMode(GL_MODELVIEW);

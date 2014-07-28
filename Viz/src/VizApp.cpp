@@ -10,6 +10,7 @@
 #include "cinder/Utilities.h"
 #include <boost/assign.hpp>
 #include <boost/date_time.hpp>
+#include "cinder/ImageIo.h"
 
 const bool RECORD_FRAMES = false;
 const std::string RECORD_FRAMES_PATH = "/Users/tim/viz_recording";
@@ -314,7 +315,12 @@ void VizApp::draw()
 	using namespace ci;
 	using namespace tmb;
 	
+	// Return if mFbo has not yet been created, otherwise binding it crashes.
+	// This is an issue on Windows where it seems that draw() may get called before setup().
+	if (!mFbo)
+		return;
 	mFbo.bindFramebuffer();
+
 	gl::setViewport(mFbo.getBounds());
 	{
 		// clear out the window with black
@@ -397,3 +403,20 @@ void VizApp::draw()
 }
 
 CINDER_APP_NATIVE( VizApp, ci::app::RendererGl )
+
+// On Windows, CINDER_APP_NATIVE defines WinMain() which is normally what's
+// needed, but if one wants to get a console window by using the linker option
+// /SUBSYSTEM:CONSOLE, the linker also expects to find the traditional main()
+// instead, defined here.
+// Warning: the following code throws away any command-line arguments.
+#if defined(CINDER_MSW)
+int main(int argc, char * const argv[])
+{
+	cinder::app::AppBasic::prepareLaunch();
+	cinder::app::AppBasic *app = new VizApp;
+	cinder::app::RendererRef ren(new ci::app::RendererGl);
+	cinder::app::AppBasic::executeLaunch(app, ren, "VizApp");
+	cinder::app::AppBasic::cleanupLaunch();
+	return 0;
+}
+#endif

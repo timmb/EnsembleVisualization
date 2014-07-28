@@ -7,6 +7,7 @@ uniform sampler2D ControlPoints;
 uniform vec2 ControlPointsSize;
 varying float brightness;
 uniform int numRandomsPerParticle;
+uniform int textureRowSize;
 uniform float time;
 
 int randomCount = -1;
@@ -226,8 +227,8 @@ float ups_sq(float x)
 void main()
 {
 	id = gl_Vertex.z;
-	randRow = mod(id, 16000);
-	randColOffset = int(randRow / 16000) * numRandomsPerParticle;
+	randRow = mod(id, textureRowSize);
+	randColOffset = int(randRow / textureRowSize) * numRandomsPerParticle;
 
 	inst0 = int(gl_Vertex.x);
 	inst1 = int(gl_Vertex.y);

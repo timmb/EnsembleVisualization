@@ -55,8 +55,11 @@ template <typename T>
 std::ostream& operator<<(std::ostream& outstream, std::vector<T> v)
 {
 	outstream << "vector: [\n";
-	for (T const& t: v)
+	//for (T const& t: v)
+	for (std::vector<T>::const_iterator vItr = v.begin(); vItr != v.end(); ++vItr)
 	{
+		const T & t = *vItr;
+
 		outstream << t << '\n';
 	}
 	return outstream << ']';

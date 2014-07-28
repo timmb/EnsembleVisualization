@@ -64,7 +64,20 @@ void ControlPointEditor::setEnableSetupMode(bool enabled)
 void ControlPointEditor::loadSettings()
 {
 	
-	std::vector<fs::path> dirs = {"assets", "../assets", "../../assets", "../../../assets", "../../../../assets", "../../../../../assets", "../../../../../../assets", "../../../../../../../assets", "../../../../../../../../assets", "../../../../../../../../../assets", "/Users/tim/Documents/Programming/Ensemble/EnsembleVisualization/Viz/assets" };
+	//std::vector<fs::path> dirs = {"assets", "../assets", "../../assets", "../../../assets", "../../../../assets", "../../../../../assets", "../../../../../../assets", "../../../../../../../assets", "../../../../../../../../assets", "../../../../../../../../../assets", "/Users/tim/Documents/Programming/Ensemble/EnsembleVisualization/Viz/assets" };
+	std::vector<fs::path> dirs;
+	dirs.push_back("assets");
+	dirs.push_back("../assets");
+	dirs.push_back("../../assets");
+	dirs.push_back("../../../assets");
+	dirs.push_back("../../../../assets");
+	dirs.push_back("../../../../../assets");
+	dirs.push_back("../../../../../../assets");
+	dirs.push_back("../../../../../../../assets");
+	dirs.push_back("../../../../../../../../assets");
+	dirs.push_back("../../../../../../../../../assets");
+	dirs.push_back("/Users/tim/Documents/Programming/Ensemble/EnsembleVisualization/Viz/assets");
+
 	fs::path file = "";
 	fs::path relativePath = "control_points.json";
 	
@@ -369,8 +382,13 @@ void ControlPointEditor::draw(float elapsedTime, float dt)
 				gl::color(notEditingControlPoint);
 			else
 				continue;
-			for (ci::Vec2f const& point: points)
+			//for (ci::Vec2f const& point: points)
+			for (std::vector<ci::Vec2f>::const_iterator pointItr = points.begin(); pointItr != points.end(); ++pointItr)
+			{
+				const ci::Vec2f & point = *pointItr;
+
 				gl::drawSolidEllipse(point, 0.1, 0.1, 25);
+			}
 		}
 	}
 	
@@ -491,9 +509,23 @@ void ControlPointEditor::keyPressed(ci::app::KeyEvent event)
 
 void ControlPointEditor::clearPoints()
 {
-	for (auto& orig: mControlPoints)
-		for (auto& dest: orig.second)
+	//for (auto& orig: mControlPoints)
+	for (std::map<int, std::map<int, std::vector<ci::Vec2f> > >::iterator origItr = mControlPoints.begin();
+		 origItr != mControlPoints.end();
+		 ++origItr)
+	{
+		std::map<int, std::vector<ci::Vec2f> > & orig = origItr->second;
+
+		//for (auto& dest: orig.second)
+		for (std::map<int, std::vector<ci::Vec2f> >::iterator destItr = orig.begin();
+			 destItr != orig.end();
+			 ++destItr)
+		{
+			std::map<int, std::vector<ci::Vec2f> >::value_type dest = *destItr;
+
 			dest.second.clear();
+		}
+	}
 	cout << "All control points cleared."<<endl;
 }
 
